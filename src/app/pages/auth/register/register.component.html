@@ -1,0 +1,262 @@
+<div class="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+  <div
+    class="w-full max-w-[360px] rounded-2xl border border-green-900/20 bg-white px-8 py-9 shadow-xl"
+  >
+    <div class="text-center">
+      <h1 class="text-3xl font-bold tracking-tight text-green-800">QuickDuit</h1>
+
+      <p class="mt-2 text-base text-slate-500">Sign in to your account.</p>
+    </div>
+
+    @if (errorMessage) {
+      <div class="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+        {{ errorMessage }}
+      </div>
+    }
+
+    <form class="mt-7" [formGroup]="registerForm" (ngSubmit)="register()">
+      <!-- Username -->
+      <div>
+        <label for="username" class="mb-2 block text-sm font-semibold text-slate-700">
+          Username
+        </label>
+
+        <div class="relative">
+          <svg
+            class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M20 21a8 8 0 0 0-16 0" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+
+          <input
+            id="username"
+            type="text"
+            formControlName="username"
+            placeholder="Enter your username"
+            autocomplete="username"
+            class="w-full rounded-xl border border-slate-300 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-green-700 focus:bg-white focus:ring-4 focus:ring-green-100"
+          />
+        </div>
+
+        @if (registerForm.get('username')?.invalid && registerForm.get('username')?.touched) {
+          <p class="mt-2 text-xs text-red-600">Username is required.</p>
+        }
+      </div>
+
+      <!-- Email -->
+      <div class="mt-5">
+        <label for="email" class="mb-2 block text-sm font-semibold text-slate-700"> Email </label>
+
+        <div class="relative">
+          <svg
+            class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M20 21a8 8 0 0 0-16 0" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+
+          <input
+            id="email"
+            type="text"
+            formControlName="email"
+            placeholder="Enter your email"
+            autocomplete="email"
+            class="w-full rounded-xl border border-slate-300 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-green-700 focus:bg-white focus:ring-4 focus:ring-green-100"
+          />
+        </div>
+
+        @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+          <p class="mt-2 text-xs text-red-600">Email is required.</p>
+        }
+      </div>
+
+      <!-- Password -->
+      <div class="mt-5">
+        <label for="password" class="mb-2 block text-sm font-semibold text-slate-700">
+          Password
+        </label>
+
+        <div class="relative">
+          <svg
+            class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <rect x="5" y="11" width="14" height="10" rx="2" />
+            <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+          </svg>
+
+          <input
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+            class="w-full rounded-xl border border-slate-300 bg-slate-50 py-3 pl-11 pr-12 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-green-700 focus:bg-white focus:ring-4 focus:ring-green-100"
+          />
+
+          <button
+            type="button"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-500 hover:text-green-700"
+            (click)="togglePassword()"
+          >
+            {{ showPassword ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+
+        @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+          <p class="mt-2 text-xs text-red-600">Password is required.</p>
+        }
+      </div>
+
+      <!-- Full Name -->
+      <div class="mt-5">
+        <label for="fullName" class="mb-2 block text-sm font-semibold text-slate-700">
+          Full Name
+        </label>
+
+        <div class="relative">
+          <svg
+            class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M20 21a8 8 0 0 0-16 0" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+
+          <input
+            id="fullName"
+            type="text"
+            formControlName="fullName"
+            placeholder="Enter your Full Name"
+            autocomplete="fullName"
+            class="w-full rounded-xl border border-slate-300 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-green-700 focus:bg-white focus:ring-4 focus:ring-green-100"
+          />
+        </div>
+
+        @if (registerForm.get('fullName')?.invalid && registerForm.get('fullName')?.touched) {
+          <p class="mt-2 text-xs text-red-600">Full Name is required.</p>
+        }
+      </div>
+
+      <!-- Phone Number -->
+      <div class="mt-5">
+        <label for="phoneNumber" class="mb-2 block text-sm font-semibold text-slate-700">
+          Phone Number
+        </label>
+
+        <div class="relative">
+          <svg
+            class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M20 21a8 8 0 0 0-16 0" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+
+          <input
+            id="phoneNumber"
+            type="text"
+            formControlName="phoneNumber"
+            placeholder="Enter your Phone Number"
+            autocomplete="phoneNumber"
+            class="w-full rounded-xl border border-slate-300 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-green-700 focus:bg-white focus:ring-4 focus:ring-green-100"
+          />
+        </div>
+
+        @if (registerForm.get('phoneNumber')?.invalid && registerForm.get('phoneNumber')?.touched) {
+          <p class="mt-2 text-xs text-red-600">Full Name is required.</p>
+        }
+      </div>
+
+      <!-- Role -->
+      <div class="mt-5">
+        <label for="roleId" class="mb-2 block text-sm font-semibold text-slate-700"> Role </label>
+
+        <select
+          id="roleId"
+          formControlName="roleId"
+          class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-green-700 focus:bg-white focus:ring-4 focus:ring-green-100"
+        >
+          <option [ngValue]="null" disabled>Select a role</option>
+
+          @for (role of roles(); track role.roleId) {
+            <option [ngValue]="role.roleId">
+              {{ role.roleName }}
+            </option>
+          }
+        </select>
+
+        @if (registerForm.get('roleId')?.invalid && registerForm.get('roleId')?.touched) {
+          <p class="mt-2 text-xs text-red-600">Please select a role.</p>
+        }
+      </div>
+
+      <!-- Branch -->
+      <div class="mt-5">
+        <label for="branchId" class="mb-2 block text-sm font-semibold text-slate-700">
+          Branch
+        </label>
+
+        <select
+          id="branchId"
+          formControlName="branchId"
+          class="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-green-700 focus:bg-white focus:ring-4 focus:ring-green-100"
+        >
+          <option [ngValue]="null" disabled>Select a branch</option>
+
+          @for (branch of branches(); track branch.branchId) {
+            <option [ngValue]="branch.branchId">
+              {{ branch.branchName }} - {{ branch.branchCode }}
+            </option>
+          }
+        </select>
+
+        @if (registerForm.get('branchId')?.invalid && registerForm.get('branchId')?.touched) {
+          <p class="mt-2 text-xs text-red-600">Please select a branch.</p>
+        }
+      </div>
+
+      <button
+        type="submit"
+        [disabled]="loading"
+        class="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-green-800 px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-green-900 focus:outline-none focus:ring-4 focus:ring-green-200 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        @if (loading) {
+          <span
+            class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+          ></span>
+
+          Signing in...
+        } @else {
+          Login
+          <span class="text-lg">→</span>
+        }
+      </button>
+    </form>
+
+    <!-- Footer -->
+    <div class="mt-7 border-t border-slate-100 pt-5 text-center">
+      <p class="text-sm text-slate-500">QuickDuit Back Office</p>
+
+      <p class="mt-1 text-xs text-slate-400">Secure loan management system</p>
+    </div>
+  </div>
+</div>

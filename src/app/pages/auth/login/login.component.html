@@ -1,0 +1,138 @@
+<div class="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+  <div
+    class="w-full max-w-[360px] rounded-2xl border border-green-900/20 bg-white px-8 py-9 shadow-xl"
+  >
+    <div class="text-center">
+      <h1 class="text-3xl font-bold tracking-tight text-green-800">QuickDuit</h1>
+
+      <p class="mt-2 text-base text-slate-500">Sign in to your account.</p>
+    </div>
+
+    @if (errorMessage) {
+      <div class="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+        {{ errorMessage }}
+      </div>
+    }
+
+    <form class="mt-7" [formGroup]="loginForm" (ngSubmit)="login()">
+      <!-- Username or Email -->
+      <div>
+        <label for="usernameOrEmail" class="mb-2 block text-sm font-semibold text-slate-700">
+          Username or Email
+        </label>
+
+        <div class="relative">
+          <svg
+            class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M20 21a8 8 0 0 0-16 0" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+
+          <input
+            id="usernameOrEmail"
+            type="text"
+            formControlName="usernameOrEmail"
+            placeholder="Enter your username or email"
+            autocomplete="username"
+            class="w-full rounded-xl border border-slate-300 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-green-700 focus:bg-white focus:ring-4 focus:ring-green-100"
+          />
+        </div>
+
+        @if (
+          loginForm.get('usernameOrEmail')?.invalid && loginForm.get('usernameOrEmail')?.touched
+        ) {
+          <p class="mt-2 text-xs text-red-600">Username or email is required.</p>
+        }
+      </div>
+
+      <!-- Password -->
+      <div class="mt-5">
+        <label for="password" class="mb-2 block text-sm font-semibold text-slate-700">
+          Password
+        </label>
+
+        <div class="relative">
+          <svg
+            class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <rect x="5" y="11" width="14" height="10" rx="2" />
+            <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+          </svg>
+
+          <input
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+            class="w-full rounded-xl border border-slate-300 bg-slate-50 py-3 pl-11 pr-12 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-green-700 focus:bg-white focus:ring-4 focus:ring-green-100"
+          />
+
+          <button
+            type="button"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-500 hover:text-green-700"
+            (click)="togglePassword()"
+          >
+            {{ showPassword ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+
+        @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+          <p class="mt-2 text-xs text-red-600">Password is required.</p>
+        }
+      </div>
+
+      <!-- Button Submit -->
+      <button
+        type="submit"
+        [disabled]="loading"
+        class="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-green-800 px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-green-900 focus:outline-none focus:ring-4 focus:ring-green-200 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        @if (loading) {
+          <span
+            class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+          ></span>
+
+          Signing in...
+        } @else {
+          Login
+          <span class="text-lg">→</span>
+        }
+      </button>
+    </form>
+
+    <!-- Sign Up -->
+    <p class="mt-5 text-center text-sm text-slate-500">
+      Don't have an account?
+      <a
+        routerLink="/register"
+        class="font-semibold text-green-700 transition hover:text-green-900 hover:underline hover:decoration-green-700 hover: cursor-pointer"
+        >Sign up</a
+      >
+    </p>
+
+    <!-- Forget Password -->
+    <p class="mt-3 text-center text-sm text-slate-500">
+      <a
+        routerLink="/forgot-password"
+        class="font-semibold text-green-700 transition hover:text-green-900 hover:underline hover:decoration-green-700 hover: cursor-pointer"
+        >Forgot your password?</a
+      >
+    </p>
+
+    <div class="mt-7 border-t border-slate-100 pt-5 text-center">
+      <p class="text-sm text-slate-500">QuickDuit Back Office</p>
+
+      <p class="mt-1 text-xs text-slate-400">Secure loan management system</p>
+    </div>
+  </div>
+</div>

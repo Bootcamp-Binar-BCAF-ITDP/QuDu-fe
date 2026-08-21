@@ -1,0 +1,64 @@
+@if (isOpen) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+    (click)="closeModal()"
+  >
+    <div
+      class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Icon -->
+      <div
+        class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-xl text-red-600"
+      >
+        🗑
+      </div>
+
+      <!-- Content -->
+      <h2 class="mt-4 text-xl font-bold text-slate-800">
+        {{ title }}
+      </h2>
+
+      <p class="mt-2 text-sm leading-6 text-slate-500">
+        {{ message }}
+      </p>
+
+      @if (itemName) {
+        <div
+          class="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700"
+        >
+          {{ itemName }}
+        </div>
+      }
+
+      <p class="mt-4 text-sm text-red-600">This action cannot be undone.</p>
+
+      <!-- Buttons -->
+      <div class="mt-6 flex justify-end gap-3">
+        <button
+          type="button"
+          (click)="closeModal()"
+          [disabled]="loading"
+          class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          (click)="confirmDelete()"
+          [disabled]="loading"
+          class="flex min-w-[100px] items-center justify-center rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
+        >
+          @if (loading) {
+            <span
+              class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+            ></span>
+          } @else {
+            Delete
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
