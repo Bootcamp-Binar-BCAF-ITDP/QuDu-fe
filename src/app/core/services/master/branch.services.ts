@@ -3,7 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiResponse } from '../../../shared/utils/apiResponse.component';
 import { Branch } from '../../../models/master/branch.models';
-import { deleteProtected, getProtected, postProtected, putProtected } from '../../../shared/utils/httpUtils.utils';
+import {
+  deleteProtected,
+  getProtected,
+  postProtected,
+  putProtected,
+} from '../../../shared/utils/httpUtils.utils';
+import { PageParams, PageResponse } from '../../../models/common/app.models';
 
 @Injectable({
   providedIn: 'root',
@@ -13,8 +19,22 @@ export class BranchService {
 
   constructor(private readonly http: HttpClient) {}
 
-  getAllBranches(): Observable<ApiResponse<Branch[]>> {
-    return getProtected<Branch[]>(this.http, this.apiUrl);
+  getAllBranches(params: PageParams = {}): Observable<ApiResponse<PageResponse<Branch>>> {
+    const {
+      page = 0,
+      size = 5,
+      sortBy = 'branchId',
+      sortDir = 'asc',
+      search = '',
+    } = params;
+
+    return getProtected<PageResponse<Branch>>(this.http, this.apiUrl, {
+      page,
+      size,
+      sortBy,
+      sortDir,
+      search,
+    });
   }
 
   addBranch(branch: Branch): Observable<any> {

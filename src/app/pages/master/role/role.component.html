@@ -21,45 +21,30 @@
     <input
       type="text"
       [(ngModel)]="search"
-      (ngModelChange)="currentPage = 1"
+      (ngModelChange)="onSearch()"
       placeholder="Search role..."
-      class="w-full md:w-80 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+      class="w-full md:w-80 px-4 py-2 border border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
     />
   </div>
 
-  <!-- Table -->
+  <!-- Table + Pagination -->
   <app-table
     [columns]="columns"
-    [data]="paginatedRoles"
+    [data]="roles()"
     [loading]="loading()"
+    emptyMessage="No role data available"
+    itemLabel="roles"
+    [currentPage]="currentPage"
+    [pageSize]="pageSize"
+    [totalItems]="totalElements()"
+    [sortBy]="sortBy"
+    [sortDir]="sortDir"
     (edit)="editRole($event)"
     (delete)="deleteRole($event)"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+    (sortChange)="onSortChange($event)"
   />
-
-  <!-- Pagination -->
-  <div *ngIf="totalPages > 1" class="flex justify-end items-center gap-2 mt-4">
-    <button
-      type="button"
-      (click)="changePage(currentPage - 1)"
-      [disabled]="currentPage === 1"
-      class="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-    >
-      Previous
-    </button>
-
-    <span class="px-3 py-2 text-sm text-gray-600">
-      Page {{ currentPage }} of {{ totalPages }}
-    </span>
-
-    <button
-      type="button"
-      (click)="changePage(currentPage + 1)"
-      [disabled]="currentPage === totalPages"
-      class="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-    >
-      Next
-    </button>
-  </div>
 
   <!-- ===================================== -->
   <!-- ADD / EDIT ROLE MODAL -->

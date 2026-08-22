@@ -1,9 +1,15 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import Swal from 'sweetalert2';
 
-import { TableColumn, TableComponent } from '../../../shared/components/table/table.component';
+import {
+  SortEvent,
+  TableColumn,
+  TableComponent,
+} from '../../../shared/components/table/table.component';
 
 import { Branch } from '../../../models/master/branch.models';
 import { BranchService } from '../../../core/services/master/branch.services';
@@ -12,11 +18,16 @@ import { HttpErrorResponse } from '@angular/common/http';
 @Component({
   selector: 'app-branch',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TableComponent],
+  imports: [CommonModule, ReactiveFormsModule, TableComponent, FormsModule],
   templateUrl: './branch.component.html',
 })
 export class BranchComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly searchInput$ = new Subject<string>();
+
   branches = signal<Branch[]>([]);
+  totalElements = signal(0);
+
   loading = signal(false);
   submitting = signal(false);
 
@@ -24,31 +35,47 @@ export class BranchComponent implements OnInit {
 
   editingBranchId: number | null = null;
 
+  // Search
+  search = '';
+
+  // Pagination
+  currentPage = 1;
+  pageSize = 5;
+
+  // Sorting
+  sortBy = 'branchId';
+  sortDir: 'asc' | 'desc' = 'asc';
+
   columns: TableColumn[] = [
     {
       key: 'branchCode',
       label: 'Branch Code',
       type: 'text',
+      sortable: true,
     },
     {
       key: 'branchName',
       label: 'Branch Name',
       type: 'text',
+      sortable: true,
     },
     {
       key: 'location',
       label: 'Location',
       type: 'text',
+      sortable: true,
     },
     {
       key: 'email',
       label: 'Email',
       type: 'text',
+      sortable: true,
     },
     {
       key: 'phoneNumber',
       label: 'Phone Number',
       type: 'text',
+      sortable: true,
     },
     {
       key: 'isActive',
@@ -74,37 +101,88 @@ export class BranchComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.searchInput$
+      .pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.currentPage = 1;
+        this.loadBranches();
+      });
+
+    this.loadBranches();
+  }
+
+  // Search Handler
+  onSearch(): void {
+    this.searchInput$.next(this.search);
+  }
+
+  // Page Handler
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadBranches();
+  }
+
+  // PAGE SIZE HANDLER
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.currentPage = 1;
+    this.loadBranches();
+  }
+
+  // SORT HANDLER
+  onSortChange(event: SortEvent): void {
+    this.sortBy = event.sortBy;
+    this.sortDir = event.sortDir;
+    this.currentPage = 1;
     this.loadBranches();
   }
 
   loadBranches(): void {
     this.loading.set(true);
 
-    this.branchService.getAllBranches().subscribe({
-      next: (response) => {
-        const data = response?.data ?? response ?? [];
+    this.branchService
+      .getAllBranches({
+        page: this.currentPage - 1,
+        size: this.pageSize,
+        sortBy: this.sortBy,
+        sortDir: this.sortDir,
+        search: this.search.trim(),
+      })
+      .subscribe({
+        next: (response) => {
+          const page = response?.data;
 
-        this.branches.set(data);
-        this.loading.set(false);
-      },
+          this.branches.set(page?.content ?? []);
+          this.totalElements.set(page?.totalElements ?? 0);
 
-      error: (error) => {
-        console.error('Failed to load branches:', error);
+          const lastPage = Math.max(1, page?.totalPages ?? 1);
 
-        this.loading.set(false);
+          if (this.currentPage > lastPage) {
+            this.currentPage = lastPage;
+            this.loadBranches();
+            return;
+          }
 
-        Swal.fire({
-          icon: 'error',
-          title: 'Failed',
-          text: 'Failed to load branch data.',
-        });
-      },
-    });
+          this.loading.set(false);
+        },
+
+        error: (error) => {
+          console.error('Failed to load branches:', error);
+
+          this.branches.set([]);
+          this.totalElements.set(0);
+          this.loading.set(false);
+
+          Swal.fire({
+            icon: 'error',
+            title: 'Failed',
+            text: 'Failed to load branch data.',
+          });
+        },
+      });
   }
 
-  /**
-   * Open modal for adding branch
-   */
+  // Open modal for adding branch
   addBranch(): void {
     this.editingBranchId = null;
 
@@ -120,9 +198,7 @@ export class BranchComponent implements OnInit {
     this.modalOpen.set(true);
   }
 
-  /**
-   * Open modal for editing branch
-   */
+  // Open modal for editing branch
   editBranch(branch: Branch): void {
     this.editingBranchId = branch.branchId ?? null;
 
@@ -138,9 +214,7 @@ export class BranchComponent implements OnInit {
     this.modalOpen.set(true);
   }
 
-  /**
-   * Close modal
-   */
+  //Close modal
   closeModal(): void {
     if (this.submitting()) {
       return;
@@ -159,9 +233,7 @@ export class BranchComponent implements OnInit {
     });
   }
 
-  /**
-   * Save / Update branch
-   */
+  // Save / Update branch
   saveBranch(): void {
     if (this.branchForm.invalid) {
       this.branchForm.markAllAsTouched();
@@ -181,9 +253,7 @@ export class BranchComponent implements OnInit {
       isActive: formValue.isActive ?? true,
     };
 
-    /**
-     * UPDATE
-     */
+    //UPDATE
     if (this.editingBranchId !== null) {
       this.branchService.updateBranch(this.editingBranchId, branch).subscribe({
         next: () => {
@@ -217,9 +287,8 @@ export class BranchComponent implements OnInit {
       return;
     }
 
-    /**
-     * CREATE
-     */
+    // CREATE
+
     this.branchService.addBranch(branch).subscribe({
       next: () => {
         this.submitting.set(false);
@@ -233,6 +302,7 @@ export class BranchComponent implements OnInit {
           showConfirmButton: false,
         });
 
+        this.currentPage = 1;
         this.loadBranches();
       },
 
@@ -250,9 +320,7 @@ export class BranchComponent implements OnInit {
     });
   }
 
-  /**
-   * Delete branch
-   */
+  // Delete branch
   deleteBranch(branch: Branch): void {
     const branchId = branch.branchId;
 

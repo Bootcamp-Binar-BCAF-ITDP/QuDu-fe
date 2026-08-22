@@ -5,6 +5,18 @@ export interface TableColumn {
   key: string;
   label: string;
   type?: 'text' | 'badge' | 'status';
+  sortable?: boolean;
+  /**
+   * Property the API sorts on, when it differs from the display key.
+   * e.g. the cell shows the flat `roleName` from the DTO, but the backend
+   * sorts on the entity path `role.roleName`.
+   */
+  sortKey?: string;
+}
+
+export interface SortEvent {
+  sortBy: string;
+  sortDir: 'asc' | 'desc';
 }
 
 @Component({
@@ -20,24 +32,49 @@ export class TableComponent {
   @Input() loading = false;
   @Input() emptyMessage = 'No data available';
 
+  // PAGINATION — currentPage is 1-based for display; the parent converts
+  // to the API's zero-based `page` param.
+  @Input() showPagination = true;
   @Input() currentPage = 1;
   @Input() totalItems = 0;
-  @Input() pageSize = 10;
+  @Input() pageSize = 5;
+  @Input() pageSizeOptions: number[] = [5, 10, 25, 50];
+  @Input() itemLabel = 'items';
+
+  // SORTING
+  @Input() sortBy = '';
+  @Input() sortDir: 'asc' | 'desc' = 'asc';
 
   @Output() edit = new EventEmitter<any>();
   @Output() delete = new EventEmitter<any>();
   @Output() pageChange = new EventEmitter<number>();
+  @Output() pageSizeChange = new EventEmitter<number>();
+  @Output() sortChange = new EventEmitter<SortEvent>();
 
   get totalPages(): number {
     return Math.max(1, Math.ceil(this.totalItems / this.pageSize));
   }
 
-  get pages(): number[] {
-    return Array.from({ length: this.totalPages }, (_, index) => index + 1);
+  /**
+   * A sliding window of at most 5 page buttons around the current page,
+   * so 200 pages doesn't render 200 buttons.
+   */
+  get visiblePages(): number[] {
+    const windowSize = 5;
+    const total = this.totalPages;
+
+    let start = Math.max(1, this.currentPage - Math.floor(windowSize / 2));
+    const end = Math.min(total, start + windowSize - 1);
+
+    start = Math.max(1, end - windowSize + 1);
+
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
   }
 
   get showingFrom(): number {
-    if (this.totalItems === 0) return 0;
+    if (this.totalItems === 0) {
+      return 0;
+    }
 
     return (this.currentPage - 1) * this.pageSize + 1;
   }
@@ -47,20 +84,55 @@ export class TableComponent {
   }
 
   changePage(page: number): void {
-    if (page < 1 || page > this.totalPages) {
+    if (page < 1 || page > this.totalPages || page === this.currentPage) {
       return;
     }
 
     this.pageChange.emit(page);
   }
 
-  getValue(row: any, key: string): any {
-    return key.split('.').reduce((object, property) => object?.[property], row);
+  onPageSizeChange(event: Event): void {
+    const value = Number((event.target as HTMLSelectElement).value);
+
+    this.pageSizeChange.emit(value);
   }
 
-  getEditPage(row: any): number {
-    const index = this.data.indexOf(row)
-    return Math.floor(index / this.pageSize) + 1;
+  sortKeyOf(column: TableColumn): string {
+    return column.sortKey ?? column.key;
+  }
+
+  isSortedBy(column: TableColumn): boolean {
+    return this.sortBy === this.sortKeyOf(column);
+  }
+
+  toggleSort(column: TableColumn): void {
+    if (!column.sortable) {
+      return;
+    }
+
+    const key = this.sortKeyOf(column);
+
+    const nextDir: 'asc' | 'desc' =
+      this.isSortedBy(column) && this.sortDir === 'asc' ? 'desc' : 'asc';
+
+    this.sortChange.emit({ sortBy: key, sortDir: nextDir });
+  }
+
+  sortIcon(column: TableColumn): string {
+    if (!column.sortable) {
+      return '';
+    }
+
+    if (!this.isSortedBy(column)) {
+      return '↕';
+    }
+
+    return this.sortDir === 'asc' ? '↑' : '↓';
+  }
+
+  /** Supports nested keys like 'branch.branchName'. */
+  getValue(row: any, key: string): any {
+    return key.split('.').reduce((object, property) => object?.[property], row);
   }
 
   onEdit(row: any): void {

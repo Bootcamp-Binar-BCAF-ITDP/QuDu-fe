@@ -17,19 +17,37 @@
     </button>
   </div>
 
-  <!-- Table -->
+  <!-- Search -->
+  <div class="mb-4">
+    <input
+      type="text"
+      [(ngModel)]="search"
+      (ngModelChange)="onSearch()"
+      placeholder="Search branch..."
+      class="w-full md:w-80 px-4 py-2 border border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+    />
+  </div>
+
+  <!-- Table + Pagination -->
   <app-table
     [columns]="columns"
     [data]="branches()"
     [loading]="loading()"
+    emptyMessage="No branch data available"
+    itemLabel="branches"
+    [currentPage]="currentPage"
+    [pageSize]="pageSize"
+    [totalItems]="totalElements()"
+    [sortBy]="sortBy"
+    [sortDir]="sortDir"
     (edit)="editBranch($event)"
     (delete)="deleteBranch($event)"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+    (sortChange)="onSortChange($event)"
   />
 
-  <!-- ========================= -->
   <!-- ADD / EDIT MODAL -->
-  <!-- ========================= -->
-
   <div *ngIf="modalOpen()" class="fixed inset-0 z-50 flex items-center justify-center">
     <!-- Overlay -->
     <div class="absolute inset-0 bg-black/50" (click)="closeModal()"></div>

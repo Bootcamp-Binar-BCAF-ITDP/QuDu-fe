@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiResponse } from '../../../shared/utils/apiResponse.component';
 import { Role, RoleRequest } from '../../../models/master/role.models';
+import { PageParams, PageResponse } from '../../../models/common/app.models';
 import {
   deleteProtected,
   getProtected,
@@ -18,8 +19,19 @@ export class RolesService {
 
   constructor(private readonly http: HttpClient) {}
 
-  getAllRoles(): Observable<ApiResponse<Role[]>> {
-    return getProtected<Role[]>(this.http, this.apiUrl);
+  getAllRoles(params: PageParams = {}): Observable<ApiResponse<PageResponse<Role>>> {
+    const { page = 0, size = 5, sortBy = 'roleId', sortDir = 'asc', search = '' } = params;
+
+    return getProtected<PageResponse<Role>>(this.http, this.apiUrl, {
+      page,
+      size,
+      sortBy,
+      sortDir,
+      search,
+    });
+  }
+  getRoleOptions(): Observable<ApiResponse<Role[]>> {
+    return getProtected<Role[]>(this.http, `${this.apiUrl}/options`);
   }
 
   addRoles(request: RoleRequest): Observable<any> {

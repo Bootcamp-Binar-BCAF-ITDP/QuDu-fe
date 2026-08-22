@@ -1,20 +1,31 @@
-import { Component, signal } from '@angular/core';
-import { TableColumn, TableComponent } from '../../../shared/components/table/table.component';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import {
+  SortEvent,
+  TableColumn,
+  TableComponent,
+} from '../../../shared/components/table/table.component';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MenuService } from '../../../core/services/master/menu.services';
 import Swal from 'sweetalert2';
 import { Menu, MenuRequest } from '../../../models/master/menu.models';
 import { HttpErrorResponse } from '@angular/common/http';
+import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-menu',
   templateUrl: './menu.component.html',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TableComponent],
+  imports: [CommonModule, ReactiveFormsModule, TableComponent, FormsModule],
 })
-export class MenuComponent {
+export class MenuComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly searchInput$ = new Subject<string>();
+
   menu = signal<Menu[]>([]);
+  totalElements = signal(0);
+
   loading = signal(false);
   submitting = signal(false);
 
@@ -22,16 +33,29 @@ export class MenuComponent {
 
   editingMenuId: number | null = null;
 
+  // Search
+  search = '';
+
+  // Pagination
+  currentPage = 1;
+  pageSize = 5;
+
+  // Sorting
+  sortBy = 'menuId';
+  sortDir: 'asc' | 'desc' = 'asc';
+
   columns: TableColumn[] = [
     {
       key: 'menuId',
       label: 'Menu ID',
       type: 'text',
+      sortable: true,
     },
     {
       key: 'menuName',
       label: 'Menu Name',
       type: 'text',
+      sortable: true,
     },
   ];
 
@@ -47,30 +71,86 @@ export class MenuComponent {
   }
 
   ngOnInit(): void {
+    this.searchInput$
+      .pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.currentPage = 1;
+        this.loadMenus();
+      });
+
+    this.loadMenus();
+  }
+
+  // Search Handler
+  onSearch(): void {
+    this.searchInput$.next(this.search);
+  }
+
+  // Page Handler
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadMenus();
+  }
+
+  // PAGE SIZE HANDLER
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.currentPage = 1;
+    this.loadMenus();
+  }
+
+  // SORT HANDLER
+  onSortChange(event: SortEvent): void {
+    this.sortBy = event.sortBy;
+    this.sortDir = event.sortDir;
+    this.currentPage = 1;
     this.loadMenus();
   }
 
   loadMenus(): void {
     this.loading.set(true);
 
-    this.menuService.getAllMenus().subscribe({
-      next: (response) => {
-        this.menu.set(response?.data ?? []);
-        this.loading.set(false);
-      },
+    this.menuService
+      .getAllMenus({
+        page: this.currentPage - 1,
+        size: this.pageSize,
+        sortBy: this.sortBy,
+        sortDir: this.sortDir,
+        search: this.search.trim(),
+      })
+      .subscribe({
+        next: (response) => {
+          const page = response?.data;
 
-      error: (error) => {
-        console.error('Failed to load branches:', error);
+          this.menu.set(page?.content ?? []);
+          this.totalElements.set(page?.totalElements ?? 0);
 
-        this.loading.set(false);
+          // Deleting the last row on the last page can strand us past the end.
+          const lastPage = Math.max(1, page?.totalPages ?? 1);
 
-        Swal.fire({
-          icon: 'error',
-          title: 'Failed',
-          text: 'Failed to load branch data.',
-        });
-      },
-    });
+          if (this.currentPage > lastPage) {
+            this.currentPage = lastPage;
+            this.loadMenus();
+            return;
+          }
+
+          this.loading.set(false);
+        },
+
+        error: (error: HttpErrorResponse) => {
+          console.error('Failed to load menu:', error);
+
+          this.menu.set([]);
+          this.totalElements.set(0);
+          this.loading.set(false);
+
+          Swal.fire({
+            icon: 'error',
+            title: 'Failed',
+            text: 'Failed to load menu data.',
+          });
+        },
+      });
   }
 
   addMenu(): void {
@@ -135,6 +215,7 @@ export class MenuComponent {
             showConfirmButton: false,
           });
 
+          // Stay on the current page — the edited row is still there.
           this.loadMenus();
         },
 
@@ -168,6 +249,8 @@ export class MenuComponent {
           showConfirmButton: false,
         });
 
+        // Back to page 1 so the new record is visible.
+        this.currentPage = 1;
         this.loadMenus();
       },
 
@@ -189,12 +272,12 @@ export class MenuComponent {
     const menuId = menu.menuId;
 
     if (menuId === undefined) {
-      console.error('Branch ID is missing.');
+      console.error('Menu ID is missing.');
       return;
     }
 
     Swal.fire({
-      title: 'Delete Branch?',
+      title: 'Delete Menu?',
       text: `Are you sure you want to delete "${menu.menuName}"?`,
       icon: 'warning',
       showCancelButton: true,
@@ -212,7 +295,7 @@ export class MenuComponent {
           Swal.fire({
             icon: 'success',
             title: 'Deleted',
-            text: 'Branch deleted successfully.',
+            text: 'Menu deleted successfully.',
             timer: 1500,
             showConfirmButton: false,
           });

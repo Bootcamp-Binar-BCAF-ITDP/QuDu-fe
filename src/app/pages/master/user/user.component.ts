@@ -1,9 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import Swal from 'sweetalert2';
 
-import { TableColumn, TableComponent } from '../../../shared/components/table/table.component';
+import {
+  SortEvent,
+  TableColumn,
+  TableComponent,
+} from '../../../shared/components/table/table.component';
 
 import { Branch } from '../../../models/master/branch.models';
 import { Role } from '../../../models/master/role.models';
@@ -16,20 +23,37 @@ import { UserService } from '../../../core/services/master/user.services';
 @Component({
   selector: 'app-user',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TableComponent],
+  imports: [CommonModule, ReactiveFormsModule, TableComponent, FormsModule],
   templateUrl: './user.component.html',
 })
 export class UserComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly searchInput$ = new Subject<string>();
+
+  // Dropdown sources — unpaginated, loaded once.
   roles = signal<Role[]>([]);
   branches = signal<Branch[]>([]);
+
+  // One page of users.
   users = signal<User[]>([]);
+  totalElements = signal(0);
 
   loading = signal(false);
   submitting = signal(false);
-
   modalOpen = signal(false);
 
-  editingUserId: number | null = null;
+  editingUserId: string | null = null;
+
+  // SEARCH
+  search = '';
+
+  // PAGINATION — 1-based here, converted to the API's zero-based page on request.
+  currentPage = 1;
+  pageSize = 5;
+
+  // SORTING
+  sortBy = 'username';
+  sortDir: 'asc' | 'desc' = 'asc';
 
   userForm;
 
@@ -43,31 +67,39 @@ export class UserComponent implements OnInit {
       key: 'username',
       label: 'Username',
       type: 'text',
+      sortable: true,
     },
     {
       key: 'fullName',
       label: 'Name',
       type: 'text',
+      sortable: true,
     },
     {
       key: 'email',
       label: 'Email',
       type: 'text',
+      sortable: true,
     },
     {
       key: 'roleName',
       label: 'Role',
       type: 'text',
+      sortable: true,
+      sortKey: 'role.roleName',
     },
     {
       key: 'phoneNumber',
       label: 'Phone Number',
       type: 'text',
+      sortable: true,
     },
     {
       key: 'branchName',
       label: 'Branch',
       type: 'text',
+      sortable: true,
+      sortKey: 'branch.branchName',
     },
     {
       key: 'isActive',
@@ -84,9 +116,13 @@ export class UserComponent implements OnInit {
   ) {
     this.userForm = this.fb.group({
       username: ['', Validators.required],
+
       email: ['', [Validators.required, Validators.email]],
+
       password: ['', Validators.required],
+
       fullName: ['', Validators.required],
+
       phoneNumber: ['', Validators.required],
 
       roleId: this.fb.control<number | null>(null, Validators.required),
@@ -96,71 +132,120 @@ export class UserComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Wait for the user to stop typing before hitting the API.
+    this.searchInput$
+      .pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.currentPage = 1;
+        this.loadUsers();
+      });
+
     this.loadUsers();
     this.loadRoles();
     this.loadBranches();
   }
 
-  /**
-   * GET ALL USERS
-   */
+  // TABLE EVENT HANDLERS
+
+  onSearch(): void {
+    this.searchInput$.next(this.search);
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadUsers();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.currentPage = 1;
+    this.loadUsers();
+  }
+
+  onSortChange(event: SortEvent): void {
+    this.sortBy = event.sortBy;
+    this.sortDir = event.sortDir;
+    this.currentPage = 1;
+    this.loadUsers();
+  }
+
+  // LOAD USERS
+
   loadUsers(): void {
     this.loading.set(true);
 
-    this.userService.getAllUsers().subscribe({
-      next: (response) => {
-        this.users.set(response.data ?? []);
-        this.loading.set(false);
-      },
+    this.userService
+      .getAllUsers({
+        page: this.currentPage - 1,
+        size: this.pageSize,
+        sortBy: this.sortBy,
+        sortDir: this.sortDir,
+        search: this.search.trim(),
+      })
+      .subscribe({
+        next: (response) => {
+          const page = response?.data;
 
-      error: (error) => {
-        console.error('Error loading users:', error);
+          this.users.set(page?.content ?? []);
+          this.totalElements.set(page?.totalElements ?? 0);
 
-        this.users.set([]);
-        this.loading.set(false);
+          // Deleting the last row on the last page can strand us past the end.
+          const lastPage = Math.max(1, page?.totalPages ?? 1);
 
-        Swal.fire({
-          icon: 'error',
-          title: 'Failed',
-          text: error?.error?.message ?? 'Failed to load users.',
-        });
-      },
-    });
+          if (this.currentPage > lastPage) {
+            this.currentPage = lastPage;
+            this.loadUsers();
+            return;
+          }
+
+          this.loading.set(false);
+        },
+
+        error: (error: HttpErrorResponse) => {
+          console.error('Error loading users:', error);
+
+          this.users.set([]);
+          this.totalElements.set(0);
+          this.loading.set(false);
+
+          Swal.fire({
+            icon: 'error',
+            title: 'Failed',
+            text: error?.error?.message ?? 'Failed to load users.',
+          });
+        },
+      });
   }
 
-  /**
-   * GET ALL ROLES
-   */
+  // LOAD ROLES (dropdown — unpaginated)
   loadRoles(): void {
-    this.roleService.getAllRoles().subscribe({
+    this.roleService.getRoleOptions().subscribe({
       next: (response) => {
-        this.roles.set(response.data ?? []);
+        this.roles.set(response?.data ?? []);
       },
 
-      error: (error) => {
+      error: (error: HttpErrorResponse) => {
         console.error('Error loading roles:', error);
       },
     });
   }
 
-  /**
-   * GET ALL BRANCHES
-   */
+  // LOAD BRANCHES (dropdown — unpaginated)
+
   loadBranches(): void {
     this.branchService.getAllBranches().subscribe({
       next: (response) => {
-        this.branches.set(response.data ?? []);
+        this.branches.set(response?.data?.content ?? []);
       },
 
-      error: (error) => {
+      error: (error: HttpErrorResponse) => {
         console.error('Error loading branches:', error);
       },
     });
   }
 
-  /**
-   * OPEN ADD USER MODAL
-   */
+  // ADD USER
+
   addUser(): void {
     this.editingUserId = null;
 
@@ -175,16 +260,17 @@ export class UserComponent implements OnInit {
     });
 
     // Password required when creating
-    this.userForm.get('password')?.setValidators([Validators.required]);
+    const passwordControl = this.userForm.get('password');
 
-    this.userForm.get('password')?.updateValueAndValidity();
+    passwordControl?.setValidators([Validators.required]);
+
+    passwordControl?.updateValueAndValidity();
 
     this.modalOpen.set(true);
   }
 
-  /**
-   * OPEN EDIT USER MODAL
-   */
+  // EDIT USER
+
   editUser(user: User): void {
     this.editingUserId = user.userId ?? null;
 
@@ -198,16 +284,17 @@ export class UserComponent implements OnInit {
       branchId: user.branchId ?? null,
     });
 
-    // Password optional when editing
-    this.userForm.get('password')?.clearValidators();
-    this.userForm.get('password')?.updateValueAndValidity();
+    // Password is optional when editing
+    const passwordControl = this.userForm.get('password');
+
+    passwordControl?.clearValidators();
+    passwordControl?.updateValueAndValidity();
 
     this.modalOpen.set(true);
   }
 
-  /**
-   * CLOSE MODAL
-   */
+  // CLOSE MODAL
+
   closeModal(): void {
     if (this.submitting()) {
       return;
@@ -227,9 +314,8 @@ export class UserComponent implements OnInit {
     });
   }
 
-  /**
-   * CREATE / UPDATE USER
-   */
+  // SAVE USER
+
   saveUser(): void {
     if (this.userForm.invalid) {
       this.userForm.markAllAsTouched();
@@ -245,21 +331,22 @@ export class UserComponent implements OnInit {
       email: formValue.email ?? '',
       fullName: formValue.fullName ?? '',
       phoneNumber: formValue.phoneNumber ?? '',
+
       accountType: 'USER',
+
       roleId: Number(formValue.roleId),
       branchId: Number(formValue.branchId),
     };
 
-    /**
-     * Include password only if entered.
-     */
+    // Only send password if user entered one
     if (formValue.password) {
       request.password = formValue.password;
     }
 
-    /**
-     * UPDATE USER
-     */
+    // ==========================================================
+    // UPDATE
+    // ==========================================================
+
     if (this.editingUserId !== null) {
       this.userService.updateUser(this.editingUserId, request).subscribe({
         next: () => {
@@ -274,10 +361,11 @@ export class UserComponent implements OnInit {
             showConfirmButton: false,
           });
 
+          // Stay on the current page — the edited row is still there.
           this.loadUsers();
         },
 
-        error: (error) => {
+        error: (error: HttpErrorResponse) => {
           console.error('Failed to update user:', error);
 
           this.submitting.set(false);
@@ -293,9 +381,10 @@ export class UserComponent implements OnInit {
       return;
     }
 
-    /**
-     * CREATE USER
-     */
+    // ==========================================================
+    // CREATE
+    // ==========================================================
+
     this.userService.createUser(request).subscribe({
       next: () => {
         this.submitting.set(false);
@@ -309,10 +398,12 @@ export class UserComponent implements OnInit {
           showConfirmButton: false,
         });
 
+        // Back to page 1 so the new record is visible.
+        this.currentPage = 1;
         this.loadUsers();
       },
 
-      error: (error) => {
+      error: (error: HttpErrorResponse) => {
         console.error('Failed to create user:', error);
 
         this.submitting.set(false);
@@ -326,9 +417,8 @@ export class UserComponent implements OnInit {
     });
   }
 
-  /**
-   * DELETE USER
-   */
+  // DELETE USER
+
   deleteUser(user: User): void {
     const userId = user.userId;
 
@@ -364,7 +454,7 @@ export class UserComponent implements OnInit {
           this.loadUsers();
         },
 
-        error: (error) => {
+        error: (error: HttpErrorResponse) => {
           console.error('Failed to delete user:', error);
 
           Swal.fire({

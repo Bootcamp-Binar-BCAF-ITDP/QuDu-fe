@@ -1,9 +1,15 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import Swal from 'sweetalert2';
 
-import { TableColumn, TableComponent } from '../../../shared/components/table/table.component';
+import {
+  SortEvent,
+  TableColumn,
+  TableComponent,
+} from '../../../shared/components/table/table.component';
 
 import { Role, RoleRequest } from '../../../models/master/role.models';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -18,7 +24,14 @@ import { MenuService } from '../../../core/services/master/menu.services';
   templateUrl: './role.component.html',
 })
 export class RoleComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly searchInput$ = new Subject<string>();
+
+  // One page of roles.
   roles = signal<Role[]>([]);
+  totalElements = signal(0);
+
+  // Every menu, unpaginated — drives the modal's checkbox list.
   menus = signal<Menu[]>([]);
 
   loading = signal(false);
@@ -27,26 +40,35 @@ export class RoleComponent implements OnInit {
 
   editingRoleId: number | null = null;
 
+  // Search
   search = '';
 
+  // Pagination
   currentPage = 1;
-  pageSize = 10;
+  pageSize = 5;
+
+  // Sorting
+  sortBy = 'roleId';
+  sortDir: 'asc' | 'desc' = 'asc';
 
   columns: TableColumn[] = [
     {
       key: 'roleId',
       label: 'Role ID',
       type: 'text',
+      sortable: true,
     },
     {
       key: 'roleName',
       label: 'Role Name',
       type: 'text',
+      sortable: true,
     },
     {
       key: 'description',
       label: 'Description',
       type: 'text',
+      sortable: true,
     },
   ];
 
@@ -65,48 +87,97 @@ export class RoleComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.searchInput$
+      .pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.currentPage = 1;
+        this.loadRoles();
+      });
+
     this.loadRoles();
     this.loadMenus();
+  }
+
+  // TABLE EVENT HANDLERS
+  onSearch(): void {
+    this.searchInput$.next(this.search);
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadRoles();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.currentPage = 1;
+    this.loadRoles();
+  }
+
+  onSortChange(event: SortEvent): void {
+    this.sortBy = event.sortBy;
+    this.sortDir = event.sortDir;
+    this.currentPage = 1;
+    this.loadRoles();
   }
 
   // LOAD ROLES
   loadRoles(): void {
     this.loading.set(true);
 
-    this.rolesService.getAllRoles().subscribe({
-      next: (response) => {
-        this.roles.set(response?.data ?? []);
-        this.loading.set(false);
-      },
+    this.rolesService
+      .getAllRoles({
+        page: this.currentPage - 1,
+        size: this.pageSize,
+        sortBy: this.sortBy,
+        sortDir: this.sortDir,
+        search: this.search.trim(),
+      })
+      .subscribe({
+        next: (response) => {
+          const page = response?.data;
 
-      error: (error: HttpErrorResponse) => {
-        console.error('Failed to load roles:', error);
+          this.roles.set(page?.content ?? []);
+          this.totalElements.set(page?.totalElements ?? 0);
 
-        this.loading.set(false);
+          // Deleting the last row on the last page can strand us past the end.
+          const lastPage = Math.max(1, page?.totalPages ?? 1);
 
-        Swal.fire({
-          icon: 'error',
-          title: 'Failed',
-          text: error.error?.message ?? 'Failed to load role data.',
-        });
-      },
-    });
+          if (this.currentPage > lastPage) {
+            this.currentPage = lastPage;
+            this.loadRoles();
+            return;
+          }
+
+          this.loading.set(false);
+        },
+
+        error: (error: HttpErrorResponse) => {
+          console.error('Failed to load roles:', error);
+
+          this.roles.set([]);
+          this.totalElements.set(0);
+          this.loading.set(false);
+
+          Swal.fire({
+            icon: 'error',
+            title: 'Failed',
+            text: error.error?.message ?? 'Failed to load role data.',
+          });
+        },
+      });
   }
 
-  // LOAD MENUS
+  // LOAD MENUS (modal checkbox list — unpaginated)
   loadMenus(): void {
-    this.loading.set(true);
-
-    this.menuService.getAllMenus().subscribe({
+    // Deliberately does NOT touch `loading` — that flag belongs to the table.
+    this.menuService.getMenuOptions().subscribe({
       next: (response) => {
         this.menus.set(response?.data ?? []);
-        this.loading.set(false);
       },
 
       error: (error: HttpErrorResponse) => {
         console.error('Failed to load menu:', error);
-
-        this.loading.set(false);
 
         Swal.fire({
           icon: 'error',
@@ -115,32 +186,6 @@ export class RoleComponent implements OnInit {
         });
       },
     });
-  }
-
-  // SEARCH
-  get filteredRoles(): Role[] {
-    const keyword = this.search.trim().toLowerCase();
-
-    if (!keyword) {
-      return this.roles();
-    }
-
-    return this.roles().filter(
-      (role) =>
-        role.roleName.toLowerCase().includes(keyword) ||
-        role.description.toLowerCase().includes(keyword),
-    );
-  }
-
-  // PAGINATION
-  get paginatedRoles(): Role[] {
-    const start = (this.currentPage - 1) * this.pageSize;
-
-    return this.filteredRoles.slice(start, start + this.pageSize);
-  }
-
-  get totalPages(): number {
-    return Math.ceil(this.filteredRoles.length / this.pageSize);
   }
 
   // ADD ROLE
@@ -160,7 +205,7 @@ export class RoleComponent implements OnInit {
   editRole(role: Role): void {
     this.editingRoleId = role.roleId;
 
-    const menuIds = role.menus.map((menu) => menu.menuId);
+    const menuIds = (role.menus ?? []).map((menu) => menu.menuId);
 
     this.roleForm.patchValue({
       roleName: role.roleName,
@@ -172,7 +217,6 @@ export class RoleComponent implements OnInit {
   }
 
   // CLOSE MODAL
-
   closeModal(): void {
     if (this.submitting()) {
       return;
@@ -189,7 +233,6 @@ export class RoleComponent implements OnInit {
   }
 
   // MENU CHECKBOX
-
   isMenuSelected(menuId: number): boolean {
     const selected = this.roleForm.get('menuIds')?.value ?? [];
 
@@ -213,7 +256,6 @@ export class RoleComponent implements OnInit {
   }
 
   // SAVE ROLE
-
   saveRole(): void {
     if (this.roleForm.invalid) {
       this.roleForm.markAllAsTouched();
@@ -236,7 +278,7 @@ export class RoleComponent implements OnInit {
     }
 
     const request: RoleRequest = {
-      roleName: formValue.roleName ?? '',
+      roleName: formValue.roleName?.toUpperCase() ?? '',
 
       description: formValue.description ?? '',
 
@@ -245,10 +287,7 @@ export class RoleComponent implements OnInit {
 
     this.submitting.set(true);
 
-    // ========================================
     // UPDATE
-    // ========================================
-
     if (this.editingRoleId !== null) {
       this.rolesService.updateRole(this.editingRoleId, request).subscribe({
         next: () => {
@@ -283,10 +322,7 @@ export class RoleComponent implements OnInit {
       return;
     }
 
-    // ========================================
     // CREATE
-    // ========================================
-
     this.rolesService.addRoles(request).subscribe({
       next: () => {
         this.submitting.set(false);
@@ -301,6 +337,7 @@ export class RoleComponent implements OnInit {
           showConfirmButton: false,
         });
 
+        this.currentPage = 1;
         this.loadRoles();
       },
 
@@ -322,6 +359,11 @@ export class RoleComponent implements OnInit {
 
   deleteRole(role: Role): void {
     const roleId = role.roleId;
+
+    if (roleId === undefined || roleId === null) {
+      console.error('Role ID is missing.');
+      return;
+    }
 
     Swal.fire({
       title: 'Delete Role?',
@@ -368,15 +410,5 @@ export class RoleComponent implements OnInit {
         },
       });
     });
-  }
-
-  // PAGINATION
-
-  changePage(page: number): void {
-    if (page < 1 || page > this.totalPages) {
-      return;
-    }
-
-    this.currentPage = page;
   }
 }

@@ -1,11 +1,16 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpContext } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { ApiResponse } from '../../../shared/utils/apiResponse.component';
 import { Menu, MenuRequest } from '../../../models/master/menu.models';
-import { REQUIRES_AUTH } from '../../context/auth-context';
-import { deleteProtected, getProtected, postProtected, putProtected } from '../../../shared/utils/httpUtils.utils';
+import { PageParams, PageResponse } from '../../../models/common/app.models';
+import {
+  deleteProtected,
+  getProtected,
+  postProtected,
+  putProtected,
+} from '../../../shared/utils/httpUtils.utils';
 
 @Injectable({
   providedIn: 'root',
@@ -15,8 +20,19 @@ export class MenuService {
 
   constructor(private readonly http: HttpClient) {}
 
-  getAllMenus(): Observable<ApiResponse<Menu[]>> {
-    return getProtected<Menu[]>(this.http, this.apiUrl);
+  getAllMenus(params: PageParams = {}): Observable<ApiResponse<PageResponse<Menu>>> {
+    const { page = 0, size = 5, sortBy = 'menuId', sortDir = 'asc', search = '' } = params;
+
+    return getProtected<PageResponse<Menu>>(this.http, this.apiUrl, {
+      page,
+      size,
+      sortBy,
+      sortDir,
+      search,
+    });
+  }
+  getMenuOptions(): Observable<ApiResponse<Menu[]>> {
+    return getProtected<Menu[]>(this.http, `${this.apiUrl}/options`);
   }
 
   addMenu(request: MenuRequest): Observable<any> {
