@@ -1,0 +1,215 @@
+<div class="p-6">
+  <!-- Header -->
+  <div class="mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">User Management</h1>
+
+      <p class="mt-1 text-sm text-gray-500">Manage your system users</p>
+    </div>
+
+    <!-- Add User -->
+    <button
+      type="button"
+      (click)="addUser()"
+      class="rounded-lg bg-green-600 px-4 py-2 text-white transition hover:bg-green-700"
+    >
+      + Add User
+    </button>
+  </div>
+
+  <!-- Table -->
+  <app-table
+    [columns]="columns"
+    [data]="users()"
+    [loading]="loading()"
+    (edit)="editUser($event)"
+    (delete)="deleteUser($event)"
+  />
+
+  <!-- ========================= -->
+  <!-- ADD / EDIT USER MODAL -->
+  <!-- ========================= -->
+
+  <div *ngIf="modalOpen()" class="fixed inset-0 z-50 flex items-center justify-center">
+    <!-- Overlay -->
+    <div class="absolute inset-0 bg-black/50" (click)="closeModal()"></div>
+
+    <!-- Modal -->
+    <div class="relative mx-4 w-full max-w-2xl rounded-xl bg-white shadow-xl">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-800">
+            {{ editingUserId !== null ? 'Edit User' : 'Add User' }}
+          </h2>
+
+          <p class="mt-1 text-sm text-gray-500">
+            {{ editingUserId !== null ? 'Update user information' : 'Create a new system user' }}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          (click)="closeModal()"
+          [disabled]="submitting()"
+          class="text-2xl leading-none text-gray-400 hover:text-gray-600"
+        >
+          &times;
+        </button>
+      </div>
+
+      <!-- Form -->
+      <form [formGroup]="userForm" (ngSubmit)="saveUser()">
+        <div class="grid grid-cols-1 gap-5 p-6 md:grid-cols-2">
+          <!-- Username -->
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-700"> Username </label>
+
+            <input
+              type="text"
+              formControlName="username"
+              placeholder="Enter username"
+              class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+
+            @if (userForm.get('username')?.touched && userForm.get('username')?.invalid) {
+              <p class="mt-1 text-sm text-red-500">Username is required.</p>
+            }
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-700"> Email </label>
+
+            <input
+              type="email"
+              formControlName="email"
+              placeholder="Enter email"
+              class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+
+            @if (userForm.get('email')?.touched && userForm.get('email')?.invalid) {
+              <p class="mt-1 text-sm text-red-500">Please enter a valid email.</p>
+            }
+          </div>
+
+          <!-- Password -->
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-700"> Password </label>
+
+            <input
+              type="password"
+              formControlName="password"
+              [placeholder]="
+                editingUserId !== null ? 'Leave empty to keep current password' : 'Enter password'
+              "
+              class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+
+            @if (userForm.get('password')?.touched && userForm.get('password')?.invalid) {
+              <p class="mt-1 text-sm text-red-500">Password is required.</p>
+            }
+          </div>
+
+          <!-- Full Name -->
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-700"> Full Name </label>
+
+            <input
+              type="text"
+              formControlName="fullName"
+              placeholder="Enter full name"
+              class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+
+            @if (userForm.get('fullName')?.touched && userForm.get('fullName')?.invalid) {
+              <p class="mt-1 text-sm text-red-500">Full name is required.</p>
+            }
+          </div>
+
+          <!-- Phone Number -->
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-700"> Phone Number </label>
+
+            <input
+              type="text"
+              formControlName="phoneNumber"
+              placeholder="Enter phone number"
+              class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+
+            @if (userForm.get('phoneNumber')?.touched && userForm.get('phoneNumber')?.invalid) {
+              <p class="mt-1 text-sm text-red-500">Phone number is required.</p>
+            }
+          </div>
+
+          <!-- Role -->
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-700"> Role </label>
+
+            <select
+              formControlName="roleId"
+              class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option [ngValue]="null" disabled>Select a role</option>
+
+              @for (role of roles(); track role.roleId) {
+                <option [ngValue]="role.roleId">
+                  {{ role.roleName }}
+                </option>
+              }
+            </select>
+
+            @if (userForm.get('roleId')?.touched && userForm.get('roleId')?.invalid) {
+              <p class="mt-1 text-sm text-red-500">Please select a role.</p>
+            }
+          </div>
+
+          <!-- Branch -->
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-700"> Branch </label>
+
+            <select
+              formControlName="branchId"
+              class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option [ngValue]="null" disabled>Select a branch</option>
+
+              @for (branch of branches(); track branch.branchId) {
+                <option [ngValue]="branch.branchId">
+                  {{ branch.branchName }} - {{ branch.branchCode }}
+                </option>
+              }
+            </select>
+
+            @if (userForm.get('branchId')?.touched && userForm.get('branchId')?.invalid) {
+              <p class="mt-1 text-sm text-red-500">Please select a branch.</p>
+            }
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div
+          class="flex justify-end gap-3 rounded-b-xl border-t border-gray-200 bg-gray-50 px-6 py-4"
+        >
+          <button
+            type="button"
+            (click)="closeModal()"
+            [disabled]="submitting()"
+            class="rounded-lg border border-gray-300 bg-white px-5 py-2 hover:bg-gray-100 disabled:opacity-50"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            [disabled]="submitting()"
+            class="rounded-lg bg-green-600 px-5 py-2 text-white hover:bg-green-700 disabled:opacity-50"
+          >
+            {{ submitting() ? 'Saving...' : editingUserId !== null ? 'Update User' : 'Save User' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

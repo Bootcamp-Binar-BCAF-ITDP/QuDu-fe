@@ -27,6 +27,7 @@ export const routes: Routes = [
   },
   {
     path: 'master',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/master/master-layout/master-layout.component').then(
         (m) => m.MasterLayoutComponent,
@@ -34,21 +35,23 @@ export const routes: Routes = [
     children: [
       {
         path: 'roles',
-        canActivate: [authGuard],
         loadComponent: () =>
           import('./pages/master/role/role.component').then((m) => m.RoleComponent),
       },
       {
         path: 'branches',
-        canActivate: [authGuard],
         loadComponent: () =>
           import('./pages/master/branch/branch.component').then((m) => m.BranchComponent),
       },
       {
         path: 'menus',
-        canActivate: [authGuard],
         loadComponent: () =>
           import('./pages/master/menu/menu.component').then((m) => m.MenuComponent),
+      },
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./pages/master/user/user.component').then((m) => m.UserComponent),
       },
     ],
   },

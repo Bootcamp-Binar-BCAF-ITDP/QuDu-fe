@@ -9,6 +9,7 @@ import { Role, RoleRequest } from '../../../models/master/role.models';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RolesService } from '../../../core/services/master/roles.services';
 import { Menu } from '../../../models/master/menu.models';
+import { MenuService } from '../../../core/services/master/menu.services';
 
 @Component({
   selector: 'app-role',
@@ -54,6 +55,7 @@ export class RoleComponent implements OnInit {
   constructor(
     private readonly fb: FormBuilder,
     private readonly rolesService: RolesService,
+    private readonly menuService: MenuService,
   ) {
     this.roleForm = this.fb.group({
       roleName: ['', Validators.required],
@@ -93,33 +95,26 @@ export class RoleComponent implements OnInit {
 
   // LOAD MENUS
   loadMenus(): void {
+    this.loading.set(true);
 
-    this.menus.set([
-      {
-        menuId: 1,
-        menuName: 'Dashboard',
+    this.menuService.getAllMenus().subscribe({
+      next: (response) => {
+        this.menus.set(response?.data ?? []);
+        this.loading.set(false);
       },
-      {
-        menuId: 3,
-        menuName: 'Menu1',
+
+      error: (error: HttpErrorResponse) => {
+        console.error('Failed to load menu:', error);
+
+        this.loading.set(false);
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Failed',
+          text: error.error?.message ?? 'Failed to load menu data.',
+        });
       },
-      {
-        menuId: 4,
-        menuName: 'Menu2',
-      },
-      {
-        menuId: 5,
-        menuName: 'Menu3',
-      },
-      {
-        menuId: 6,
-        menuName: 'Menu4',
-      },
-      {
-        menuId: 7,
-        menuName: 'Menu5',
-      },
-    ]);
+    });
   }
 
   // SEARCH
