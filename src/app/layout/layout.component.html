@@ -1,0 +1,11 @@
+<div class="min-h-screen bg-slate-100">
+  <app-sidebar />
+
+  <main class="ml-[280px] flex min-h-screen flex-col">
+    <app-header [title]="pageTitle()" />
+
+    <section class="flex-1 p-8">
+      <router-outlet />
+    </section>
+  </main>
+</div>

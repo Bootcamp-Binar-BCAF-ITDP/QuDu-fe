@@ -58,7 +58,7 @@ export class LoginComponent {
         console.log('Login response:', response);
 
         if (response.token) {
-          this.router.navigate(['/master/branches']);
+          this.router.navigate(['/applications']);
         } else {
           this.errorMessage = 'Login failed. Token was not received.';
         }

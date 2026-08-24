@@ -1,0 +1,53 @@
+<header
+  class="sticky top-0 z-30 flex h-[82px] items-center justify-between gap-6 border-b border-slate-200 bg-white px-8"
+>
+  <h2 class="truncate text-2xl font-bold tracking-tight text-slate-800">{{ title() }}</h2>
+
+  <div class="flex items-center gap-5">
+    @if (search.enabled()) {
+      <div class="relative">
+        <span
+          class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+          aria-hidden="true"
+        >
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            @for (d of icons.search; track $index) {
+              <path [attr.d]="d" stroke-linecap="round" stroke-linejoin="round" />
+            }
+          </svg>
+        </span>
+
+        <label class="sr-only" for="shell-search">{{ search.placeholder() }}</label>
+        <input
+          id="shell-search"
+          type="search"
+          [ngModel]="search.query()"
+          (ngModelChange)="search.query.set($event)"
+          [placeholder]="search.placeholder()"
+          class="w-[260px] rounded-xl border border-slate-300 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-green-700 focus:bg-white focus:ring-4 focus:ring-green-100"
+        />
+      </div>
+    }
+
+    <button
+      type="button"
+      class="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-green-700 hover: cursor-pointerfocus:outline-none focus-visible:ring-2 focus-visible:ring-green-700"
+      aria-label="Notifications"
+    >
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+        @for (d of icons.bell; track $index) {
+          <path [attr.d]="d" stroke-linecap="round" stroke-linejoin="round" />
+        }
+      </svg>
+    </button>
+
+    <div class="h-8 border-l border-slate-200" aria-hidden="true"></div>
+
+    <div
+      class="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-sm font-semibold text-green-800"
+      [title]="userName()"
+    >
+      {{ userInitial() }}
+    </div>
+  </div>
+</header>

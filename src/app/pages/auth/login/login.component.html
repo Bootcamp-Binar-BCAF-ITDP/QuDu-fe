@@ -79,7 +79,7 @@
 
           <button
             type="button"
-            class="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-500 hover:text-green-700"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-500 hover:text-green-700 hover: cursor-pointer"
             (click)="togglePassword()"
           >
             {{ showPassword ? 'Hide' : 'Show' }}
@@ -95,7 +95,7 @@
       <button
         type="submit"
         [disabled]="loading"
-        class="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-green-800 px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-green-900 focus:outline-none focus:ring-4 focus:ring-green-200 disabled:cursor-not-allowed disabled:opacity-60"
+        class="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-green-800 px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-green-900 hover: cursor-pointer focus:outline-none focus:ring-4 focus:ring-green-200 disabled:cursor-not-allowed disabled:opacity-60"
       >
         @if (loading) {
           <span
