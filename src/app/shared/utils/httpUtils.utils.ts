@@ -24,11 +24,14 @@ const buildParams = (params?: QueryParams): HttpParams => {
 export const getProtected = <T>(
   http: HttpClient,
   url: string,
-  params?: QueryParams,
+  params?: QueryParams | HttpParams,
 ): Observable<ApiResponse<T>> => {
   const context = new HttpContext().set(REQUIRES_AUTH, true);
 
-  return http.get<ApiResponse<T>>(url, { context, params: buildParams(params) });
+  return http.get<ApiResponse<T>>(url, {
+    context,
+    params: params instanceof HttpParams ? params : buildParams(params),
+  });
 };
 
 export const postProtected = <T>(

@@ -100,8 +100,6 @@ export class RegisterComponent implements OnInit {
       next: (response) => {
         this.loading = false;
 
-        console.log('Registration success:', response);
-
         this.registerForm.reset();
       },
 

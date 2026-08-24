@@ -49,13 +49,9 @@ export class LoginComponent {
       accountType: 'USER',
     };
 
-    console.log('Login request:', request);
-
     this.authService.login(request).subscribe({
       next: (response) => {
         this.loading = false;
-
-        console.log('Login response:', response);
 
         if (response.token) {
           this.router.navigate(['/applications']);

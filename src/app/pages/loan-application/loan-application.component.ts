@@ -11,12 +11,8 @@ import {
   StatusGroup,
   statusesMatching,
 } from '../../models/loan-application/loan-application.models';
-import {
-  ApplicationReviewModalComponent,
-  ReviewDecision,
-} from './application-review-modal.component';
 import { LoanApplicationService } from '../../core/services/loan-application/loan-application.service';
-import { LayoutSearchService } from '../../layout/layout-search.service';
+import { ApplicationDetailModalComponent } from './application-review-modal.component';
 
 interface StatusStyle {
   label: string;
@@ -50,31 +46,21 @@ const PAGE_SIZES = [5, 10, 25, 50];
 @Component({
   selector: 'app-loan-application',
   standalone: true,
-  imports: [DatePipe, FormsModule, ApplicationReviewModalComponent],
+  imports: [DatePipe, FormsModule, ApplicationDetailModalComponent],
   templateUrl: './loan-application.component.html',
 })
 export class LoanApplicationComponent implements OnInit {
   private readonly service = inject(LoanApplicationService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly search = inject(LayoutSearchService);
-
   readonly pageSizes = PAGE_SIZES;
-
-  /**
-   * Tabs come from STATUS_GROUPS. Each one carries a regex over the status
-   * NAME, expanded to a concrete status list at request time — so a tab can
-   * cover several statuses without listing them by hand.
-   */
   readonly tabs: StatusGroup[] = STATUS_GROUPS;
-
-  /* state */
 
   readonly rows = signal<LoanApplication[]>([]);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
-  readonly activeTab = signal<StatusGroup>(this.tabs[1]);
+  readonly activeTab = signal<StatusGroup>(this.tabs[0]);
 
   readonly page = signal(0);
   readonly size = signal(10);
@@ -87,28 +73,20 @@ export class LoanApplicationComponent implements OnInit {
   readonly last = signal(true);
 
   readonly selected = signal<LoanApplication | null>(null);
-  readonly submitting = signal(false);
-  readonly toast = signal<string | null>(null);
 
-  /* derived */
+  /** What the user is typing. */
+  readonly searchInput = signal('');
 
-  /** Statuses the active tab resolves to. Empty = no filter. */
+  /** What was actually sent to the server on the last load. */
+  readonly appliedSearch = signal('');
+
+  readonly searchDirty = computed(
+    () => this.searchInput().trim() !== this.appliedSearch(),
+  );
+
   readonly activeStatuses = computed<LoanStatus[]>(() =>
     statusesMatching(this.activeTab().pattern),
   );
-
-  /** Client-side narrowing of the rows already loaded — not a server search. */
-  readonly visibleRows = computed(() => {
-    const q = this.search.query().trim().toLowerCase();
-    if (!q) return this.rows();
-
-    return this.rows().filter(
-      (r) =>
-        r.applicationId.toLowerCase().includes(q) ||
-        (r.customer?.customerName ?? '').toLowerCase().includes(q) ||
-        (r.purpose ?? '').toLowerCase().includes(q),
-    );
-  });
 
   readonly rangeStart = computed(() =>
     this.totalElements() === 0 ? 0 : this.page() * this.size() + 1,
@@ -118,7 +96,6 @@ export class LoanApplicationComponent implements OnInit {
     Math.min(this.page() * this.size() + this.rows().length, this.totalElements()),
   );
 
-  /** Windowed page numbers with gaps, e.g. [1, 2, 3, '…', 25]. */
   readonly pageNumbers = computed<(number | '…')[]>(() => {
     const total = this.totalPages();
     const current = this.page() + 1;
@@ -136,14 +113,9 @@ export class LoanApplicationComponent implements OnInit {
     return out;
   });
 
-  /* lifecycle */
-
   ngOnInit(): void {
-    this.search.configure('Filter this page…');
     this.load();
   }
-
-  /* data */
 
   load(): void {
     this.loading.set(true);
@@ -156,6 +128,7 @@ export class LoanApplicationComponent implements OnInit {
         sortBy: this.sortBy(),
         sortDir: this.sortDir(),
         statuses: this.activeStatuses(),
+        search: this.appliedSearch() || undefined,
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -177,7 +150,27 @@ export class LoanApplicationComponent implements OnInit {
       });
   }
 
-  /* table interaction */
+  // ---- search ----
+
+  submitSearch(): void {
+    const term = this.searchInput().trim();
+    if (term === this.appliedSearch()) return;
+
+    this.appliedSearch.set(term);
+    this.page.set(0);
+    this.load();
+  }
+
+  clearSearch(): void {
+    if (!this.searchInput() && !this.appliedSearch()) return;
+
+    this.searchInput.set('');
+    this.appliedSearch.set('');
+    this.page.set(0);
+    this.load();
+  }
+
+  // ---- filters, sorting, paging ----
 
   selectTab(tab: StatusGroup): void {
     if (tab.key === this.activeTab().key) return;
@@ -225,7 +218,7 @@ export class LoanApplicationComponent implements OnInit {
     }
   }
 
-  /* modal */
+  // ---- modal ----
 
   view(application: LoanApplication): void {
     this.selected.set(application);
@@ -233,48 +226,9 @@ export class LoanApplicationComponent implements OnInit {
 
   closeModal(): void {
     this.selected.set(null);
-    this.submitting.set(false);
   }
 
-  onDecided(decision: ReviewDecision): void {
-    this.submitting.set(true);
-
-    this.service
-      .submitReview({
-        applicationId: decision.applicationId,
-        approve: decision.approve,
-        note: decision.note || undefined,
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.submitting.set(false);
-          this.selected.set(null);
-          this.showToast(
-            decision.approve
-              ? `${decision.applicationId} sent to the branch manager.`
-              : `${decision.applicationId} rejected.`,
-          );
-          this.load();
-        },
-        error: (err) => {
-          this.submitting.set(false);
-          this.showToast(err?.error?.message ?? 'The decision could not be saved. Try again.');
-        },
-      });
-  }
-
-  onRevisionRequested(decision: ReviewDecision): void {
-    // No backend endpoint for this yet — see the notes in chat.
-    this.showToast(`Revision requests are not wired up yet (${decision.applicationId}).`);
-  }
-
-  private showToast(message: string): void {
-    this.toast.set(message);
-    setTimeout(() => this.toast.set(null), 4000);
-  }
-
-  /* presentation helpers */
+  // ---- presentation helpers ----
 
   statusStyle(status: LoanStatus): StatusStyle {
     return (
@@ -304,7 +258,6 @@ export class LoanApplicationComponent implements OnInit {
       .join('');
   }
 
-  /** Deterministic avatar tint so the same customer keeps the same colour. */
   avatarTint(seed: string): string {
     const tints = [
       'bg-green-600',
@@ -318,6 +271,4 @@ export class LoanApplicationComponent implements OnInit {
     for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
     return tints[hash % tints.length];
   }
-
-  trackById = (_: number, row: LoanApplication) => row.applicationId;
 }

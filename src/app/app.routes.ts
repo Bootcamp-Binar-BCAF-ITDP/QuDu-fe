@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guard/auth.guard';
 
 export const routes: Routes = [
-  /* ---------- Public Routes ---------- */
+  /* Public Routes */
   {
     path: 'login',
     loadComponent: () => import('./pages/auth/login/login.component').then((m) => m.LoginComponent),
@@ -27,7 +27,7 @@ export const routes: Routes = [
       ),
   },
 
-  /* ---------- Protected Routes ---------- */
+  /* Protected Routes */
   {
     path: '',
     canActivate: [authGuard],
@@ -72,8 +72,6 @@ export const routes: Routes = [
           { path: '', redirectTo: 'roles', pathMatch: 'full' },
         ],
       },
-
-
       { path: '', redirectTo: 'applications', pathMatch: 'full' },
     ],
   },

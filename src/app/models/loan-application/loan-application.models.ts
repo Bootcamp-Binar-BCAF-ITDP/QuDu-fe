@@ -1,4 +1,4 @@
-/* ---------- status ---------- */
+/* status */
 
 export const LoanStatus = {
   CHECKING: 'CHECKING',
@@ -24,12 +24,9 @@ export function isTerminal(status: LoanStatus): boolean {
   return TERMINAL_STATUSES.includes(status);
 }
 
-/* ---------- status groups (tabs) ---------- */
-
 export interface StatusGroup {
   key: string;
   label: string;
-  /** null = no filter (All). Matched against the status name. */
   pattern: RegExp | null;
 }
 
@@ -40,35 +37,22 @@ export const STATUS_GROUPS: StatusGroup[] = [
     pattern: null,
   },
   {
-    // Awaiting marketing review — this desk's inbox.
-    key: 'bucket',
-    label: 'Bucket',
-    pattern: /^CHECKING$/,
-  },
-  {
-    // In flight with someone else: branch manager or back office.
     key: 'pending',
     label: 'Pending',
-    pattern: /^PENDING_/,
+    pattern: /^(CHECKING|PENDING_)/,
   },
   {
-    // Cleared all the way through.
     key: 'approved',
     label: 'Approved',
     pattern: /^(VERIFIED|DISBURSED)$/,
   },
   {
-    // Rejected at any stage.
     key: 'rejected',
     label: 'Rejected',
     pattern: /^REJECTED_/,
   },
 ];
 
-/**
- * Expands a group's pattern into the statuses it covers.
- * Returns [] for the "All" group, meaning "send no status filter".
- */
 export function statusesMatching(pattern: RegExp | null): LoanStatus[] {
   if (!pattern) {
     return [];
@@ -77,6 +61,12 @@ export function statusesMatching(pattern: RegExp | null): LoanStatus[] {
   return ALL_STATUSES.filter((status) => pattern.test(status));
 }
 
+export interface UserSummary {
+  userId: string;
+  username: string;
+  fullName: string;
+  roleName: string;
+}
 
 export interface CustomerSummary {
   customerId: string;
@@ -93,47 +83,57 @@ export interface CustomerSummary {
 
 export interface LoanDocumentResponse {
   documentId: number;
-  /** e.g. 'KTP', 'SALARY_SLIP', 'BANK_STATEMENT' */
+  applicationId?: string;
+  /** e.g. 'KTP', 'KK', 'SELFIE', 'SLIP_GAJI', 'BANK_ACCOUNT' */
   documentType: string;
   fileName: string;
   fileUrl: string;
   uploadedAt?: string;
 }
 
+export type ReviewRecommendation = 'ACCEPT' | 'REJECT';
+
 export interface LoanReviewResponse {
   reviewId: number;
-  marketingUserId?: string;
-  marketingName?: string;
-  branchName?: string;
+  applicationId?: string;
+  marketing: UserSummary | null;
+  recommendation?: ReviewRecommendation | string;
   reviewNote?: string;
-  reviewDate?: string;
-  approved?: boolean;
+  uploadedAt?: string;
 }
+
+export type DecisionOutcome = 'APPROVED' | 'REJECTED';
 
 export interface LoanDecisionResponse {
   decisionId: number;
-  branchManagerName?: string;
-  decision: 'APPROVED' | 'REJECTED';
+  applicationId?: string;
+  branchManager: UserSummary | null;
+  decision?: DecisionOutcome | string;
   decisionNote?: string;
   decidedAt?: string;
 }
 
 export interface LoanVerificationResponse {
   verificationId: number;
-  verifiedBy?: string;
-  result?: string;
-  note?: string;
-  verifiedAt?: string;
+  applicationId?: string;
+  verifiedBy: UserSummary | null;
+  /** Free text, and localised, e.g. 'Can be Contacted', 'Nada Sambung Tidak Diangkat'. */
+  callStatus?: string;
+  verificationNote?: string;
+  verificationDate?: string;
 }
 
 export interface LoanDisbursementResponse {
   disbursementId: number;
-  amount?: number;
-  disbursedAt?: string;
+  applicationId?: string;
+  processedBy: UserSummary | null;
+  disbursedAmount?: number;
+  bankName?: string;
   accountNumber?: string;
+  disbursementDate?: string;
 }
 
-/* ---------- the application ---------- */
+/* application */
 
 export interface LoanApplication {
   applicationId: string;
@@ -148,18 +148,19 @@ export interface LoanApplication {
 
   documents: LoanDocumentResponse[] | null;
   review: LoanReviewResponse | null;
+  /** Branch manager decision. The API serialises this key in lower case. */
   bmdecision: LoanDecisionResponse | null;
   verifications: LoanVerificationResponse[] | null;
   disbursement: LoanDisbursementResponse | null;
 }
-
-/* ---------- requests ---------- */
 
 export interface LoanReviewRequest {
   applicationId: string;
   approve: boolean;
   note?: string;
 }
+
+/* query */
 
 export type SortDirection = 'asc' | 'desc';
 
@@ -182,4 +183,5 @@ export interface LoanApplicationQuery {
   sortDir: SortDirection;
 
   statuses?: LoanStatus[];
+  search?: string;
 }

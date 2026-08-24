@@ -1,3 +1,5 @@
+export type NavAction = 'logout';
+
 export interface NavLeaf {
   label: string;
   route: string;
@@ -9,6 +11,7 @@ export interface NavItem {
   route?: string;
   children?: NavLeaf[];
   exact?: boolean;
+  action?: NavAction;
 }
 
 export const ICONS = {
@@ -52,4 +55,5 @@ export const NAV_ITEMS: NavItem[] = [
 
 export const FOOTER_ITEMS: NavItem[] = [
   { label: 'Settings', route: '/settings', icon: [...ICONS.gear] },
+  { label: 'Logout',action: 'logout', icon: [...ICONS.logout] },
 ];

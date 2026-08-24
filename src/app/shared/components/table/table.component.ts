@@ -6,11 +6,6 @@ export interface TableColumn {
   label: string;
   type?: 'text' | 'badge' | 'status';
   sortable?: boolean;
-  /**
-   * Property the API sorts on, when it differs from the display key.
-   * e.g. the cell shows the flat `roleName` from the DTO, but the backend
-   * sorts on the entity path `role.roleName`.
-   */
   sortKey?: string;
 }
 

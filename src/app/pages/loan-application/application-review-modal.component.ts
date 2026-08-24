@@ -1,46 +1,64 @@
 import { DatePipe } from '@angular/common';
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   HostListener,
   OnDestroy,
   ViewChild,
   computed,
-  effect,
+  inject,
   input,
   output,
   signal,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { LoanApplication, LoanDocumentResponse, LoanStatus } from '../../models/loan-application/loan-application.models';
-
-
-export interface ReviewDecision {
-  applicationId: string;
-  approve: boolean;
-  note: string;
-}
+import {
+  LoanApplication,
+  LoanDocumentResponse,
+} from '../../models/loan-application/loan-application.models';
+import { LoanApplicationService } from '../../core/services/loan-application/loan-application.service';
 
 const INDICATIVE_ANNUAL_RATE = 0.12;
 
+/** `callStatus` is free text and often Indonesian, so match on both languages. */
+const FAILED_CALL_MARKERS = [
+  'FAIL',
+  'GAGAL',
+  'TIDAK',
+  'BELUM',
+  'NO ANSWER',
+  'UNREACHABLE',
+  'REJECT',
+];
+
+/** Document type tokens that should stay upper case in tab labels. */
+const DOCUMENT_ACRONYMS = new Set(['KTP', 'KK', 'NPWP', 'NIK', 'SIM', 'PBB']);
+
+export type TimelineTone = 'neutral' | 'positive' | 'negative';
+
+export interface TimelineEntry {
+  key: string;
+  title: string;
+  actor: string | null;
+  note: string | null;
+  date: string | Date | null;
+  tone: TimelineTone;
+}
+
 @Component({
-  selector: 'app-application-review-modal',
+  selector: 'app-application-detail-modal',
   standalone: true,
-  imports: [DatePipe, FormsModule],
-  templateUrl: 'application-review-modal.component.html',
+  imports: [DatePipe],
+  templateUrl: './application-review-modal.component.html',
 })
-export class ApplicationReviewModalComponent implements OnDestroy {
+export class ApplicationDetailModalComponent implements AfterViewInit, OnDestroy {
+  private readonly service = inject(LoanApplicationService);
+
   readonly application = input.required<LoanApplication>();
-  readonly submitting = input(false);
 
   readonly closed = output<void>();
-  readonly decided = output<ReviewDecision>();
-  readonly revisionRequested = output<ReviewDecision>();
 
-  //state
-  readonly note = signal('');
   readonly activeDocumentId = signal<number | null>(null);
-  readonly draftSavedAt = signal<Date | null>(null);
 
   @ViewChild('closeButton') private closeButton?: ElementRef<HTMLButtonElement>;
 
@@ -48,12 +66,11 @@ export class ApplicationReviewModalComponent implements OnDestroy {
 
   constructor() {
     document.body.classList.add('overflow-hidden');
+  }
 
-    // Reset the document tab whenever a different application is shown.
-    effect(() => {
-      const docs = this.documents();
-      this.activeDocumentId.set(docs.length ? docs[0].documentId : null);
-    });
+  ngAfterViewInit(): void {
+    // `autofocus` does not fire on elements Angular inserts after page load.
+    this.closeButton?.nativeElement.focus();
   }
 
   ngOnDestroy(): void {
@@ -61,38 +78,116 @@ export class ApplicationReviewModalComponent implements OnDestroy {
     this.previouslyFocused?.focus();
   }
 
+  // ---- derived data ----
+
   readonly documents = computed<LoanDocumentResponse[]>(() => this.application().documents ?? []);
 
+  /** Falls back to the first document, so no effect is needed to preselect a tab. */
   readonly activeDocument = computed<LoanDocumentResponse | null>(() => {
+    const docs = this.documents();
+    if (!docs.length) return null;
+
     const id = this.activeDocumentId();
-    return this.documents().find((d) => d.documentId === id) ?? null;
+    return docs.find((d) => d.documentId === id) ?? docs[0];
   });
 
-  readonly actionable = computed(() => this.application().status === LoanStatus.CHECKING);
+  readonly activeDocumentKey = computed<number | null>(
+    () => this.activeDocument()?.documentId ?? null,
+  );
 
-  readonly estimatedInstallment = computed(() => {
+  readonly estimatedInstallment = computed<number | null>(() => {
     const { requestedAmount, tenor } = this.application();
     if (!requestedAmount || !tenor) return null;
 
     const r = INDICATIVE_ANNUAL_RATE / 12;
     const factor = Math.pow(1 + r, tenor);
-    return (requestedAmount /r /factor) / (factor - 1);
+    return (requestedAmount * r * factor) / (factor - 1);
   });
 
-  readonly incomeVariance = computed(() => {
-    const stated = this.application().income;
-    const verified = this.application().customer?.verifiedMonthlyIncome;
-    if (!stated || verified == null) return null;
-    return (verified - stated) / stated;
+  readonly timeline = computed<TimelineEntry[]>(() => {
+    const app = this.application();
+    const entries: TimelineEntry[] = [];
+
+    entries.push({
+      key: 'submitted',
+      title: 'Application submitted',
+      actor: app.customer?.customerName ?? null,
+      note: null,
+      date: app.submissionDate ?? null,
+      tone: 'neutral',
+    });
+
+    const review = app.review;
+    if (review) {
+      const rejected = (review.recommendation ?? '').toUpperCase().includes('REJECT');
+      entries.push({
+        key: 'review',
+        title: rejected ? 'Rejected by marketing' : 'Marketing recommended approval',
+        actor: review.marketing?.fullName ?? null,
+        note: review.reviewNote ?? null,
+        date: review.uploadedAt ?? null,
+        tone: rejected ? 'negative' : 'positive',
+      });
+    }
+
+    // The API serialises the branch manager decision under `bmdecision`.
+    const decision = app.bmdecision;
+    if (decision) {
+      const approved = (decision.decision ?? '').toUpperCase() === 'APPROVED';
+      entries.push({
+        key: 'decision',
+        title: approved ? 'Approved by branch manager' : 'Rejected by branch manager',
+        actor: decision.branchManager?.fullName ?? null,
+        note: decision.decisionNote ?? null,
+        date: decision.decidedAt ?? null,
+        tone: approved ? 'positive' : 'negative',
+      });
+    }
+
+    for (const verification of app.verifications ?? []) {
+      const failed = this.isFailedCall(verification.callStatus);
+      entries.push({
+        key: `verification-${verification.verificationId}`,
+        title: `Back office verification — ${verification.callStatus ?? 'recorded'}`,
+        actor: verification.verifiedBy?.fullName ?? null,
+        note: verification.verificationNote ?? null,
+        date: verification.verificationDate ?? null,
+        tone: failed ? 'negative' : 'positive',
+      });
+    }
+
+    const disbursement = app.disbursement;
+    if (disbursement) {
+      entries.push({
+        key: 'disbursement',
+        title: `Disbursed ${this.formatRupiah(disbursement.disbursedAmount)}`,
+        actor: disbursement.processedBy?.fullName ?? null,
+        note:
+          [disbursement.bankName, disbursement.accountNumber].filter(Boolean).join(' · ') || null,
+        date: disbursement.disbursementDate ?? null,
+        tone: 'positive',
+      });
+    }
+
+    return entries;
   });
+
+  // ---- formatting ----
+  documentUrl(doc: LoanDocumentResponse): string {
+    return this.service.documentUrl(doc);
+  }
 
   readonly documentTabLabel = (doc: LoanDocumentResponse): string =>
-    doc.documentType
+    (doc.documentType ?? '')
       .split('_')
-      .map((part) => part.charAt(0) + part.slice(1).toLowerCase())
-      .join(' ');
-
-  // formatting
+      .filter(Boolean)
+      .map((part) => {
+        const upper = part.toUpperCase();
+        return DOCUMENT_ACRONYMS.has(upper)
+          ? upper
+          : upper.charAt(0) + part.slice(1).toLowerCase();
+      })
+      .join(' ') || 'Document';
 
   formatRupiah(value: number | null | undefined): string {
     if (value == null) return '—';
@@ -122,7 +217,22 @@ export class ApplicationReviewModalComponent implements OnDestroy {
       .join('');
   }
 
-  //actions /
+  toneDotClass(tone: TimelineTone): string {
+    switch (tone) {
+      case 'positive':
+        return 'bg-green-600 ring-green-100';
+      case 'negative':
+        return 'bg-red-600 ring-red-100';
+      default:
+        return 'bg-slate-400 ring-slate-100';
+    }
+  }
+
+  private isFailedCall(callStatus: string | null | undefined): boolean {
+    if (!callStatus) return false;
+    const upper = callStatus.toUpperCase();
+    return FAILED_CALL_MARKERS.some((marker) => upper.includes(marker));
+  }
 
   @HostListener('document:keydown.escape')
   close(): void {
@@ -131,34 +241,5 @@ export class ApplicationReviewModalComponent implements OnDestroy {
 
   onBackdropClick(event: MouseEvent): void {
     if (event.target === event.currentTarget) this.close();
-  }
-
-  approve(): void {
-    this.decided.emit({
-      applicationId: this.application().applicationId,
-      approve: true,
-      note: this.note().trim(),
-    });
-  }
-
-  reject(): void {
-    this.decided.emit({
-      applicationId: this.application().applicationId,
-      approve: false,
-      note: this.note().trim(),
-    });
-  }
-
-  requestRevision(): void {
-    this.revisionRequested.emit({
-      applicationId: this.application().applicationId,
-      approve: false,
-      note: this.note().trim(),
-    });
-  }
-
-  saveDraft(): void {
-    // Local only — there is no draft endpoint. Swap in a real call when there is.
-    this.draftSavedAt.set(new Date());
   }
 }

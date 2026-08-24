@@ -105,25 +105,47 @@
   <!-- footer -->
   <div class="shrink-0 border-t border-slate-100 p-4">
     @for (item of footerItems; track item.label) {
-      <a
-        [routerLink]="item.route"
-        routerLinkActive="!bg-green-50 !text-green-800"
-        class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700"
-      >
-        <svg
-          class="h-5 w-5 shrink-0"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
+      @if (item.route) {
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="!bg-green-50 !text-green-800"
+          class="flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700"
         >
-          @for (d of item.icon; track $index) {
-            <path [attr.d]="d" stroke-linecap="round" stroke-linejoin="round" />
-          }
-        </svg>
-        {{ item.label }}
-      </a>
+          <svg
+            class="h-5 w-5 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            @for (d of item.icon; track $index) {
+              <path [attr.d]="d" stroke-linecap="round" stroke-linejoin="round" />
+            }
+          </svg>
+          {{ item.label }}
+        </a>
+      } @else {
+        <button
+          type="button"
+          (click)="onFooterAction(item)"
+          class="flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-red-50 hover:text-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700"
+        >
+          <svg
+            class="h-5 w-5 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            @for (d of item.icon; track $index) {
+              <path [attr.d]="d" stroke-linecap="round" stroke-linejoin="round" />
+            }
+          </svg>
+          {{ item.label }}
+        </button>
+      }
     }
   </div>
 </aside>

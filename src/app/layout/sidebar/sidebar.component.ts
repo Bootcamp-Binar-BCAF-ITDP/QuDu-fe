@@ -4,6 +4,7 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/ro
 import { filter } from 'rxjs';
 
 import { FOOTER_ITEMS, ICONS, NAV_ITEMS, NavItem } from '../nav.config';
+import { AuthService } from '../../core/services/auth.services';
 
 @Component({
   selector: 'app-sidebar',
@@ -13,6 +14,7 @@ import { FOOTER_ITEMS, ICONS, NAV_ITEMS, NavItem } from '../nav.config';
 })
 export class SidebarComponent {
   private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
 
   readonly navItems = NAV_ITEMS;
   readonly footerItems = FOOTER_ITEMS;
@@ -47,7 +49,10 @@ export class SidebarComponent {
     this.openGroups.update((state) => ({ ...state, [item.label]: !state[item.label] }));
   }
 
-  /** Expand any group containing the current route, without collapsing others. */
+  onFooterAction(item: NavItem): void {
+    if (item.action === 'logout') this.authService.logout();
+  }
+
   private openActiveGroups(): void {
     const next = { ...this.openGroups() };
     let changed = false;
