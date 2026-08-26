@@ -149,7 +149,6 @@ export class UserComponent implements OnInit {
   }
 
   // TABLE EVENT HANDLERS
-
   onSearch(): void {
     this.searchInput$.next(this.search);
   }
@@ -173,7 +172,6 @@ export class UserComponent implements OnInit {
   }
 
   // LOAD USERS
-
   loadUsers(): void {
     this.loading.set(true);
 
@@ -234,7 +232,6 @@ export class UserComponent implements OnInit {
   }
 
   // LOAD BRANCHES (dropdown — unpaginated)
-
   loadBranches(): void {
     this.branchService.getAllBranches().subscribe({
       next: (response) => {
@@ -248,7 +245,6 @@ export class UserComponent implements OnInit {
   }
 
   // ADD USER
-
   addUser(): void {
     this.editingUserId = null;
 
@@ -318,7 +314,6 @@ export class UserComponent implements OnInit {
   }
 
   // SAVE USER
-
   saveUser(): void {
     if (this.userForm.invalid) {
       this.userForm.markAllAsTouched();
@@ -346,9 +341,7 @@ export class UserComponent implements OnInit {
       request.password = formValue.password;
     }
 
-    // ==========================================================
     // UPDATE
-    // ==========================================================
 
     if (this.editingUserId !== null) {
       this.userService.updateUser(this.editingUserId, request).subscribe({
@@ -384,10 +377,8 @@ export class UserComponent implements OnInit {
       return;
     }
 
-    // ==========================================================
     // CREATE
-    // ==========================================================
-
+    debugger
     this.userService.createUser(request).subscribe({
       next: () => {
         this.submitting.set(false);
@@ -401,7 +392,6 @@ export class UserComponent implements OnInit {
           showConfirmButton: false,
         });
 
-        // Back to page 1 so the new record is visible.
         this.currentPage = 1;
         this.loadUsers();
       },

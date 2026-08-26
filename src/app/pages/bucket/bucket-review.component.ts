@@ -137,7 +137,6 @@ export class BucketReviewComponent {
   }
 
   // ---- derived money ----
-
   readonly estimatedInstallment = computed<number | null>(() => {
     const app = this.application();
     if (!app?.requestedAmount || !app.tenor) return null;
@@ -147,7 +146,6 @@ export class BucketReviewComponent {
     return (app.requestedAmount * r * factor) / (factor - 1);
   });
 
-  /** Installment against stated monthly income. Null when income is missing. */
   readonly debtToIncome = computed<number | null>(() => {
     const income = this.application()?.income;
     const installment = this.estimatedInstallment();

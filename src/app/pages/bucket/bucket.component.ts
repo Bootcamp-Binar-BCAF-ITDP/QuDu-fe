@@ -16,10 +16,6 @@ interface Recommendation extends Chip {
   tone: 'positive' | 'negative' | 'neutral';
 }
 
-/**
- * Duplicated from loan-application.component.ts for now. Hoist into
- * loan-application.models.ts and import in both places when you touch it next.
- */
 const STATUS_STYLES: Record<LoanStatus, Chip> = {
   CHECKING: { label: 'Checking', classes: 'bg-amber-50 text-amber-700 ring-amber-200' },
   REJECTED_BY_MARKETING: {

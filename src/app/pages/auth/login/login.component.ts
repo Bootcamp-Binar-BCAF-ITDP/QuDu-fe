@@ -1,20 +1,19 @@
-import { Component } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AuthService } from '../../../core/services/auth.services';
-import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { LoadingComponent } from '../../../shared/components/loading/loading.component';
+import { Component, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.services';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink, LoadingComponent],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
-  loading = false;
+  loading = signal(false);
   showPassword = false;
   errorMessage = '';
-  spinner = false
 
   loginForm;
 
@@ -35,14 +34,13 @@ export class LoginComponent {
 
   login(): void {
     this.errorMessage = '';
-    this.spinner = true
 
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
     }
 
-    this.loading = true;
+    this.loading.set(true);
 
     const request = {
       usernameOrEmail: this.loginForm.get('usernameOrEmail')?.value ?? '',
@@ -52,30 +50,31 @@ export class LoginComponent {
       accountType: 'USER',
     };
 
-    this.authService.login(request).subscribe({
-      next: (response) => {
-        this.loading = false;
+    this.authService.login(request)
+      .pipe(finalize(() => (this.loading.set(false))))
+      .subscribe({
+        next: (response) => {
+          this.loading.set(false);
 
-        if (response.token) {
-          this.router.navigate(['/applications']);
-        } else {
-          this.errorMessage = 'Login failed. Token was not received.';
-        }
-      },
+          if (response.token) {
+            this.router.navigate(['/applications']);
+          } else {
+            this.errorMessage = 'Login failed. Token was not received.';
+          }
+        },
+        error: (error: HttpErrorResponse) => {
+          console.error('Login error:', error);
 
-      error: (error: HttpErrorResponse) => {
-        console.error('Login error:', error);
+          this.loading.set(false);
 
-        this.loading = false;
-
-        if (error.status === 401) {
-          this.errorMessage = 'Invalid username/email or password.';
-        } else if (error.status === 0) {
-          this.errorMessage = 'Cannot connect to the server.';
-        } else {
-          this.errorMessage = error.error?.message || 'An unexpected error occurred.';
-        }
-      },
-    });
+          if (error.status === 401) {
+            this.errorMessage = 'Invalid username/email or password.';
+          } else if (error.status === 0) {
+            this.errorMessage = 'Cannot connect to the server.';
+          } else {
+            this.errorMessage = error.error?.message || 'An unexpected error occurred.';
+          }
+        },
+      });
   }
 }

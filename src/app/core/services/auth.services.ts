@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { catchError, EMPTY, Observable, tap, throwError } from 'rxjs';
 import {
   ForgotPasswordRequest,
   LoginRequest,
@@ -26,16 +26,22 @@ export class AuthService {
 
   private readonly USER_KEY = 'current_user';
 
-  constructor(private readonly http: HttpClient, private readonly router: Router) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly router: Router,
+  ) {}
 
   login(request: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, request).pipe(
       tap((response: LoginResponse) => {
         if (response.token) {
           localStorage.setItem(this.TOKEN_KEY, response.token);
-
           localStorage.setItem(this.USER_KEY, JSON.stringify(response));
         }
+      }),
+      catchError((err) => {
+        console.error('Login request failed:', err);
+        return throwError(() => err);
       }),
     );
   }
@@ -43,7 +49,6 @@ export class AuthService {
   register(request: RegisterRequest): Observable<RegisterResponse> {
     return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, request).pipe(
       tap((response: RegisterResponse) => {
-        // Handle registration response if needed
         return response;
       }),
     );

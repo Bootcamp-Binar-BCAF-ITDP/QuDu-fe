@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { User, UserRequest } from '../../../models/master/user.models';
-import { deleteProtected, getProtected, putProtected } from '../../../shared/utils/httpUtils.utils';
+import { deleteProtected, getProtected, postProtected, putProtected } from '../../../shared/utils/httpUtils.utils';
 import { PageParams, PageResponse } from '../../../models/common/app.models';
 import { ApiResponse } from '../../../shared/utils/apiResponse.component';
 
@@ -28,7 +28,7 @@ export class UserService {
   }
 
   createUser(request: UserRequest): Observable<any> {
-    return this.http.post<any>(this.registerUrl, request);
+    return postProtected<UserRequest>(this.http, this.registerUrl, request);
   }
 
   updateUser(userId: string, request: UserRequest): Observable<any> {
