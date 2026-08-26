@@ -16,6 +16,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { RolesService } from '../../../core/services/master/roles.services';
 import { Menu } from '../../../models/master/menu.models';
 import { MenuService } from '../../../core/services/master/menu.services';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-role',
@@ -26,6 +27,7 @@ import { MenuService } from '../../../core/services/master/menu.services';
 export class RoleComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly searchInput$ = new Subject<string>();
+  router = inject(Router);
 
   // One page of roles.
   roles = signal<Role[]>([]);
@@ -140,7 +142,6 @@ export class RoleComponent implements OnInit {
           this.roles.set(page?.content ?? []);
           this.totalElements.set(page?.totalElements ?? 0);
 
-          // Deleting the last row on the last page can strand us past the end.
           const lastPage = Math.max(1, page?.totalPages ?? 1);
 
           if (this.currentPage > lastPage) {
@@ -158,19 +159,11 @@ export class RoleComponent implements OnInit {
           this.roles.set([]);
           this.totalElements.set(0);
           this.loading.set(false);
-
-          Swal.fire({
-            icon: 'error',
-            title: 'Failed',
-            text: error.error?.message ?? 'Failed to load role data.',
-          });
         },
       });
   }
 
-  // LOAD MENUS (modal checkbox list — unpaginated)
   loadMenus(): void {
-    // Deliberately does NOT touch `loading` — that flag belongs to the table.
     this.menuService.getMenuOptions().subscribe({
       next: (response) => {
         this.menus.set(response?.data ?? []);
@@ -179,11 +172,6 @@ export class RoleComponent implements OnInit {
       error: (error: HttpErrorResponse) => {
         console.error('Failed to load menu:', error);
 
-        Swal.fire({
-          icon: 'error',
-          title: 'Failed',
-          text: error.error?.message ?? 'Failed to load menu data.',
-        });
       },
     });
   }

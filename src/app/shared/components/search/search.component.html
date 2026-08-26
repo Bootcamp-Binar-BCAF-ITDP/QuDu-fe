@@ -1,0 +1,80 @@
+<!-- search -->
+<div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+  <div class="relative flex-1 sm:max-w-md">
+    <!-- Search Icon -->
+    <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M11 18a7 7 0 100-14 7 7 0 000 14z"
+        />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-3.5-3.5" />
+      </svg>
+    </span>
+
+    <label class="sr-only" [for]="inputId()">{{ label() }}</label>
+
+    <!-- Input -->
+    <input
+      [id]="inputId()"
+      type="search"
+      [ngModel]="searchInput()"
+      (ngModelChange)="searchInput.set($event)"
+      (keydown.enter)="submitSearch()"
+      [placeholder]="placeholder()"
+      class="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-9 pr-9 text-sm text-slate-900 placeholder:text-slate-400 focus:border-green-700 focus:outline-none focus:ring-1 focus:ring-green-700"
+    />
+
+    <!-- Clear Button -->
+    @if (searchInput()) {
+      <button
+        type="button"
+        (click)="clearSearch()"
+        class="absolute inset-y-0 right-2 flex cursor-pointer items-center rounded-md px-1 text-slate-400 transition hover:text-slate-700"
+        aria-label="Clear search"
+      >
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </button>
+    }
+  </div>
+
+  <!-- Submit Button -->
+  <button
+    type="button"
+    (click)="submitSearch()"
+    [disabled]="loading()"
+    class="flex items-center gap-2 cursor-pointer rounded-lg bg-green-800 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-green-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    @if (loading()) {
+      <svg
+        class="h-4 w-4 animate-spin text-white"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          class="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          stroke-width="4"
+        ></circle>
+        <path
+          class="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        ></path>
+      </svg>
+    }
+    {{ buttonText() }}
+  </button>
+
+  <!-- Search Result Indicator -->
+  @if (appliedSearch()) {
+    <p class="text-sm text-slate-500 sm:ml-1">Showing results for “{{ appliedSearch() }}”</p>
+  }
+</div>

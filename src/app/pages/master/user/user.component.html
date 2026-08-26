@@ -235,3 +235,7 @@
     </div>
   </div>
 </div>
+
+@if(spinner) {
+  <app-loading [fullScreen]="true" text="Loading..."></app-loading>
+}

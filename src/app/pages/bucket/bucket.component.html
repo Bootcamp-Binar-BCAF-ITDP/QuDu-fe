@@ -1,0 +1,388 @@
+<!-- header -->
+<div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+  <div class="flex items-center gap-3">
+    <h1 class="text-xl font-semibold tracking-tight text-slate-900">Application review</h1>
+    @if (!loading() && !error()) {
+      <span class="rounded-full bg-green-700 px-2.5 py-0.5 text-xs font-semibold text-white">
+        {{ totalElements() }}
+      </span>
+    }
+  </div>
+
+  <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+    <div class="relative flex-1 sm:w-80">
+      <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M11 18a7 7 0 100-14 7 7 0 000 14z"
+          />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-3.5-3.5" />
+        </svg>
+      </span>
+
+      <label class="sr-only" for="bucket-search">Search applications</label>
+      <input
+        id="bucket-search"
+        type="search"
+        [ngModel]="searchInput()"
+        (ngModelChange)="searchInput.set($event)"
+        (keydown.enter)="submitSearch()"
+        placeholder="Search applications…"
+        class="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-9 pr-9 text-sm text-slate-900 placeholder:text-slate-400 focus:border-green-700 focus:outline-none focus:ring-1 focus:ring-green-700"
+      />
+
+      @if (searchInput()) {
+        <button
+          type="button"
+          (click)="clearSearch()"
+          class="absolute inset-y-0 right-2 flex cursor-pointer items-center rounded-md px-1 text-slate-400 transition hover:text-slate-700"
+          aria-label="Clear search"
+        >
+          <svg
+            class="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      }
+    </div>
+
+    <button
+      type="button"
+      (click)="submitSearch()"
+      [disabled]="loading()"
+      class="cursor-pointer rounded-lg bg-green-800 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-green-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      Search
+    </button>
+  </div>
+</div>
+
+@if (appliedSearch()) {
+  <p class="mb-3 text-sm text-slate-500">Showing results for “{{ appliedSearch() }}”</p>
+}
+
+<!-- table -->
+<div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[68rem] text-left">
+      <thead class="border-b border-slate-200 bg-slate-50">
+        <tr class="text-xs uppercase tracking-wide text-slate-500">
+          <th scope="col" class="px-6 py-3.5 font-medium">
+            <button
+              type="button"
+              class="inline-flex cursor-pointer items-center gap-1 uppercase tracking-wide hover:text-slate-900"
+              (click)="toggleSort('applicationId')"
+            >
+              App ID
+              @if (sortBy() === 'applicationId') {
+                <span aria-hidden="true">{{ sortDir() === 'asc' ? '↑' : '↓' }}</span>
+              }
+            </button>
+          </th>
+          <th scope="col" class="px-6 py-3.5 font-medium">Customer name</th>
+          <th scope="col" class="px-6 py-3.5 text-right font-medium">
+            <button
+              type="button"
+              class="inline-flex cursor-pointer items-center gap-1 uppercase tracking-wide hover:text-slate-900"
+              (click)="toggleSort('requestedAmount')"
+            >
+              Loan amount
+              @if (sortBy() === 'requestedAmount') {
+                <span aria-hidden="true">{{ sortDir() === 'asc' ? '↑' : '↓' }}</span>
+              }
+            </button>
+          </th>
+          <th scope="col" class="px-6 py-3.5 font-medium">Purpose &amp; tenure</th>
+          <th scope="col" class="px-6 py-3.5 font-medium">
+            <button
+              type="button"
+              class="inline-flex cursor-pointer items-center gap-1 uppercase tracking-wide hover:text-slate-900"
+              (click)="toggleSort('submissionDate')"
+            >
+              Submission date
+              @if (sortBy() === 'submissionDate') {
+                <span aria-hidden="true">{{ sortDir() === 'asc' ? '↑' : '↓' }}</span>
+              }
+            </button>
+          </th>
+          <th scope="col" class="px-6 py-3.5 text-center font-medium">Credit score</th>
+          <th scope="col" class="px-6 py-3.5 font-medium">Mkt rec.</th>
+          <th scope="col" class="px-6 py-3.5 font-medium">
+            <button
+              type="button"
+              class="inline-flex cursor-pointer items-center gap-1 uppercase tracking-wide hover:text-slate-900"
+              (click)="toggleSort('status')"
+            >
+              Status
+              @if (sortBy() === 'status') {
+                <span aria-hidden="true">{{ sortDir() === 'asc' ? '↑' : '↓' }}</span>
+              }
+            </button>
+          </th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y divide-slate-100">
+        @if (loading()) {
+          @for (skeleton of [1, 2, 3, 4, 5]; track skeleton) {
+            <tr>
+              <td class="px-6 py-5" colspan="8">
+                <div class="h-4 w-full animate-pulse rounded bg-slate-100"></div>
+              </td>
+            </tr>
+          }
+        } @else if (error()) {
+          <tr>
+            <td class="px-6 py-16 text-center" colspan="8">
+              <p class="text-sm font-medium text-slate-900">{{ error() }}</p>
+              <button
+                type="button"
+                class="mt-3 cursor-pointer rounded-lg bg-green-800 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-900"
+                (click)="load()"
+              >
+                Retry
+              </button>
+            </td>
+          </tr>
+        } @else if (!rows().length) {
+          <tr>
+            <td class="px-6 py-16 text-center" colspan="8">
+              @if (appliedSearch()) {
+                <p class="text-sm text-slate-600">No applications match “{{ appliedSearch() }}”.</p>
+                <button
+                  type="button"
+                  class="mt-3 cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  (click)="clearSearch()"
+                >
+                  Clear search
+                </button>
+              } @else {
+                <p class="text-sm text-slate-600">Your queue is empty. Nothing to review.</p>
+              }
+            </td>
+          </tr>
+        } @else {
+          @for (row of rows(); track row.applicationId) {
+            <tr class="cursor-pointer transition hover:bg-slate-50/80" (click)="open(row)">
+              <td class="px-6 py-4">
+                <button
+                  type="button"
+                  class="cursor-pointer text-sm font-medium text-green-800 underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700"
+                  (click)="open(row)"
+                  [attr.aria-label]="'Open ' + row.applicationId"
+                >
+                  {{ row.applicationId }}
+                </button>
+              </td>
+
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <span
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+                    [class]="avatarTint(row.customer?.customerId || row.applicationId)"
+                    aria-hidden="true"
+                  >
+                    {{ initials(row.customer?.customerName) }}
+                  </span>
+                  <div class="min-w-0">
+                    <p class="truncate text-sm font-medium text-slate-900">
+                      {{ row.customer?.customerName || 'Unknown customer' }}
+                    </p>
+                    <p class="truncate text-xs text-slate-500">{{ row.customer?.customerId }}</p>
+                  </div>
+                </div>
+              </td>
+
+              <td class="px-6 py-4 text-right text-sm font-semibold text-slate-900">
+                {{ formatRupiah(row.requestedAmount) }}
+              </td>
+
+              <td class="px-6 py-4">
+                <p class="text-sm text-slate-900">{{ row.purpose || '—' }}</p>
+                <p class="text-xs text-slate-500">{{ row.tenor }} months</p>
+              </td>
+
+              <td class="px-6 py-4 text-sm text-slate-600">
+                {{ row.submissionDate | date: 'MMM d, y' }}
+              </td>
+
+              <td class="px-6 py-4">
+                <span
+                  class="mx-auto flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold ring-2"
+                  [class]="creditScoreClass(row.creditScore)"
+                >
+                  {{ row.creditScore ?? '—' }}
+                </span>
+              </td>
+
+              <td class="px-6 py-4">
+                @if (recommendation(row); as rec) {
+                  <span
+                    class="inline-flex items-center gap-1.5 text-sm font-medium"
+                    [class]="rec.classes"
+                  >
+                    @switch (rec.tone) {
+                      @case ('positive') {
+                        <svg
+                          class="h-4 w-4 shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M7 11v9H4v-9h3zm0 0l4-8a2 2 0 013 2l-1 4h5a2 2 0 012 2.4l-1.3 6A2 2 0 0116.7 20H7"
+                          />
+                        </svg>
+                      }
+                      @case ('negative') {
+                        <svg
+                          class="h-4 w-4 shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M12 9v4m0 4h.01M10.3 3.9L2.4 17a2 2 0 001.7 3h15.8a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"
+                          />
+                        </svg>
+                      }
+                      @default {
+                        <svg
+                          class="h-4 w-4 shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M12 8h.01M11 12h1v4h1m8-4a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                      }
+                    }
+                    {{ rec.label }}
+                  </span>
+                }
+              </td>
+
+              <td class="px-6 py-4">
+                <span
+                  class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset"
+                  [class]="statusStyle(row.status).classes"
+                >
+                  {{ statusStyle(row.status).label }}
+                </span>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Table Footer -->
+  <div
+    class="flex flex-col gap-3 border-t border-slate-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
+  >
+    <div class="flex items-center gap-3">
+      <p class="text-sm text-slate-600">
+        @if (totalElements()) {
+          Showing {{ rangeStart() }} to {{ rangeEnd() }} of {{ totalElements() }} results
+        } @else {
+          No results
+        }
+      </p>
+
+      <select
+        id="bucket-page-size"
+        [ngModel]="size()"
+        (ngModelChange)="changeSize($event)"
+        aria-label="Rows per page"
+        class="cursor-pointer rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-900 focus:border-green-700 focus:outline-none focus:ring-1 focus:ring-green-700"
+      >
+        @for (option of pageSizes; track option) {
+          <option [value]="option">{{ option }} / page</option>
+        }
+      </select>
+    </div>
+
+    @if (totalPages() > 1) {
+      <nav class="flex items-center gap-1" aria-label="Pagination">
+        <button
+          type="button"
+          class="cursor-pointer rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+          [disabled]="first() || loading()"
+          (click)="previousPage()"
+          aria-label="Previous page"
+        >
+          <svg
+            class="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        @for (item of pageNumbers(); track $index) {
+          @if (item === '…') {
+            <span class="px-2 text-sm text-slate-400">…</span>
+          } @else {
+            <button
+              type="button"
+              class="min-w-9 cursor-pointer rounded-lg border px-3 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 disabled:cursor-not-allowed"
+              [class]="
+                item === page() + 1
+                  ? 'border-green-700 bg-green-50 text-green-800'
+                  : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+              "
+              [attr.aria-current]="item === page() + 1 ? 'page' : null"
+              [disabled]="loading()"
+              (click)="goToPage(item)"
+            >
+              {{ item }}
+            </button>
+          }
+        }
+
+        <button
+          type="button"
+          class="cursor-pointer rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+          [disabled]="last() || loading()"
+          (click)="nextPage()"
+          aria-label="Next page"
+        >
+          <svg
+            class="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </nav>
+    }
+  </div>
+</div>

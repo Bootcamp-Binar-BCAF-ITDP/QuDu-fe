@@ -49,6 +49,7 @@ export const NAV_ITEMS: NavItem[] = [
       { label: 'User', route: '/master/users' },
     ],
   },
+  { label: 'Bucket', route: '/bucket', icon: [...ICONS.bell] },
   { label: 'Approval history', route: '/approval-history', icon: [...ICONS.history] },
   { label: 'Reports', route: '/reports', icon: [...ICONS.chart] },
 ];

@@ -3,16 +3,18 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.services';
 import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+import { LoadingComponent } from '../../../shared/components/loading/loading.component';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, LoadingComponent],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
   loading = false;
   showPassword = false;
   errorMessage = '';
+  spinner = false
 
   loginForm;
 
@@ -33,6 +35,7 @@ export class LoginComponent {
 
   login(): void {
     this.errorMessage = '';
+    this.spinner = true
 
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();

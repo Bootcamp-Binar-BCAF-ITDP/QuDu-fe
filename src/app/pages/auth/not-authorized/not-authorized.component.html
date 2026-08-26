@@ -1,0 +1,55 @@
+<div class="flex min-h-[70vh] items-center justify-center px-4 py-16">
+  <div class="w-full max-w-lg text-center">
+    <div
+      class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-700 ring-1 ring-amber-100"
+      aria-hidden="true"
+    >
+      <svg class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+        <rect x="4" y="10" width="16" height="11" rx="2" />
+        <path stroke-linecap="round" d="M8 10V7a4 4 0 018 0v3" />
+        <circle cx="12" cy="15.5" r="1.2" fill="currentColor" stroke="none" />
+      </svg>
+    </div>
+
+    <p class="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">Error 403</p>
+
+    <h1 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
+      You don’t have access to this page
+    </h1>
+
+    <p class="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-600">
+      Your account is signed in, but this area is restricted to another role. Nothing has been
+      changed, and no record was opened.
+    </p>
+
+    <div class="mt-7 flex flex-wrap items-center justify-center gap-2">
+      @if (canGoBack) {
+        <button
+          type="button"
+          (click)="back()"
+          class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2"
+        >
+          <svg
+            class="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          Go back
+        </button>
+      }
+      <button
+        type="button"
+        (click)="goToLogin()"
+        class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium
+        bg-green-800 transition text-white hover:bg-green-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2"
+      >
+        Login
+      </button>
+    </div>
+  </div>
+</div>

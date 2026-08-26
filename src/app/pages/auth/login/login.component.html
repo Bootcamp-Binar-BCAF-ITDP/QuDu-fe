@@ -95,7 +95,7 @@
       <button
         type="submit"
         [disabled]="loading"
-        class="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-green-800 px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-green-900 hover: cursor-pointer focus:outline-none focus:ring-4 focus:ring-green-200 disabled:cursor-not-allowed disabled:opacity-60"
+        class="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-green-800 px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-green-900 hover:cursor-pointer focus:outline-none focus:ring-4 focus:ring-green-200 disabled:cursor-not-allowed disabled:opacity-60"
       >
         @if (loading) {
           <span
@@ -136,3 +136,7 @@
     </div>
   </div>
 </div>
+
+@if (spinner) {
+  <app-loading [fullScreen]="true" text="Waiting..."></app-loading>
+}

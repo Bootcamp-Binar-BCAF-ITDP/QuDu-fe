@@ -19,14 +19,17 @@ import { User, UserRequest } from '../../../models/master/user.models';
 import { BranchService } from '../../../core/services/master/branch.services';
 import { RolesService } from '../../../core/services/master/roles.services';
 import { UserService } from '../../../core/services/master/user.services';
+import { LoadingComponent } from '../../../shared/components/loading/loading.component';
 
 @Component({
   selector: 'app-user',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TableComponent, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TableComponent, FormsModule, LoadingComponent],
   templateUrl: './user.component.html',
 })
 export class UserComponent implements OnInit {
+  spinner = false;
+
   private readonly destroyRef = inject(DestroyRef);
   private readonly searchInput$ = new Subject<string>();
 
@@ -132,7 +135,7 @@ export class UserComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Wait for the user to stop typing before hitting the API.
+
     this.searchInput$
       .pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {

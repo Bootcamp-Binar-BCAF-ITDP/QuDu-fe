@@ -42,6 +42,23 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'bucket',
+        data: { title: 'Bucket Application' },
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./pages/bucket/bucket.component').then((m) => m.BucketComponent),
+          },
+          {
+            path: ':applicationId',
+            data: { title: 'Application Review' },
+            loadComponent: () =>
+              import('./pages/bucket/bucket-review.component').then((m) => m.BucketReviewComponent),
+          },
+        ],
+      },
+      {
         path: 'master',
         data: { title: 'Master Data' },
         children: [
@@ -76,5 +93,21 @@ export const routes: Routes = [
     ],
   },
 
-  { path: '**', redirectTo: 'login' },
+  // Not Authorized
+  {
+    path: 'forbidden',
+    data: { title: 'Not authorized' },
+    loadComponent: () =>
+      import('./pages/auth/not-authorized/not-authorized.component').then(
+        (m) => m.NotAuthorizedComponent,
+      ),
+  },
+
+  // Not Found
+  {
+    path: '**',
+    data: { title: 'Page Not Found' },
+    loadComponent: () =>
+      import('./pages/auth/not-found/not-found.component').then((m) => m.NotFoundComponent),
+  },
 ];
