@@ -156,12 +156,13 @@ export interface LoanApplication {
 
 export interface LoanReviewRequest {
   applicationId: string;
-  approve: boolean;
+  approve?: boolean;
+  recommendation: ReviewRecommendation;
+  reviewNote?: string;
   note?: string;
 }
 
 /* query */
-
 export type SortDirection = 'asc' | 'desc';
 
 export const SORTABLE_FIELDS = [

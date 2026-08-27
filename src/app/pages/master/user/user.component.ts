@@ -378,7 +378,6 @@ export class UserComponent implements OnInit {
     }
 
     // CREATE
-    debugger
     this.userService.createUser(request).subscribe({
       next: () => {
         this.submitting.set(false);
