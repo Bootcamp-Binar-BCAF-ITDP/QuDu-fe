@@ -17,6 +17,8 @@ export interface BucketItem {
   income: number;
   status: LoanStatus;
   submissionDate: string;
+  bank: string
+  bankAccountNumber: string
 
   documents: LoanDocumentResponse[] | null;
   review: LoanReviewResponse | null;

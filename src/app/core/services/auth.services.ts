@@ -83,4 +83,9 @@ export class AuthService {
     localStorage.removeItem(this.USER_KEY);
     this.router.navigate(['/login']);
   }
+
+  user(): any {
+    const user = localStorage.getItem(this.USER_KEY);
+    return user ? JSON.parse(user) : null;
+  }
 }

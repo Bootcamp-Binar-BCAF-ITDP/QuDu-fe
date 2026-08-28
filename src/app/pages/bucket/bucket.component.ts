@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { BucketItem } from '../../models/bucket/bucket.models';
 import { LoanStatus, SortDirection } from '../../models/loan-application/loan-application.models';
 import { BucketService } from '../../core/services/bucket/bucket.services.';
+import { AuthService } from '../../core/services/auth.services';
 
 interface Chip {
   label: string;
@@ -40,6 +41,35 @@ const STATUS_STYLES: Record<LoanStatus, Chip> = {
 
 const PAGE_SIZES = [5, 10, 25, 50];
 
+/** Matches RoleName on the server. */
+export type RoleName = 'MARKETING' | 'BRANCH_MANAGER' | 'BACK_OFFICE' | 'ADMIN';
+
+/**
+ * Back office works two queues, because an application changes status between
+ * them: PENDING_BACK_OFFICE while the calls are happening, then VERIFIED once
+ * one connects. Every other role has a single queue, so the strip is hidden.
+ */
+export type BucketTab = 'VERIFICATION' | 'DISBURSEMENT';
+
+interface TabDef {
+  key: BucketTab;
+  label: string;
+  empty: string;
+}
+
+const BACK_OFFICE_TABS: TabDef[] = [
+  {
+    key: 'VERIFICATION',
+    label: 'Verification',
+    empty: 'No applications waiting on a verification call.',
+  },
+  {
+    key: 'DISBURSEMENT',
+    label: 'Disbursement',
+    empty: 'No verified applications waiting to be disbursed.',
+  },
+];
+
 export type BucketSortField = 'applicationId' | 'requestedAmount' | 'submissionDate' | 'status';
 
 @Component({
@@ -52,8 +82,26 @@ export class BucketComponent implements OnInit {
   private readonly service = inject(BucketService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
 
   readonly pageSizes = PAGE_SIZES;
+  readonly tabs = BACK_OFFICE_TABS;
+
+  /**
+   * TODO wire to your auth service, e.g.
+   *   private readonly auth = inject(AuthService);
+   *   readonly role = computed(() => this.auth.user()?.role ?? null);
+   *
+   * While it is null the strip stays hidden and the page behaves exactly as it
+   * did before, so nothing breaks until you connect it.
+   */
+
+  readonly role = computed(() => this.auth.user()?.role ?? null)
+  // readonly role = signal<RoleName | null>(null);
+
+  readonly showTabs = computed(() => this.role() === 'BACK_OFFICE');
+
+  readonly activeTab = signal<BucketTab>('VERIFICATION');
 
   readonly rows = signal<BucketItem[]>([]);
   readonly loading = signal(false);
@@ -108,14 +156,22 @@ export class BucketComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    this.service
-      .list({
-        page: this.page(),
-        size: this.size(),
-        sortBy: this.sortBy(),
-        sortDir: this.sortDir(),
-        search: this.appliedSearch(),
-      })
+    const query = {
+      page: this.page(),
+      size: this.size(),
+      sortBy: this.sortBy(),
+      sortDir: this.sortDir(),
+      search: this.appliedSearch(),
+    };
+
+    // Disbursement is a separate endpoint because the bucket endpoint only
+    // returns PENDING_BACK_OFFICE — VERIFIED rows drop out of it entirely.
+    const source =
+      this.showTabs() && this.activeTab() === 'DISBURSEMENT'
+        ? this.service.disbursementBucket(query)
+        : this.service.list(query);
+
+    source
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
@@ -131,7 +187,7 @@ export class BucketComponent implements OnInit {
           this.totalElements.set(0);
           this.totalPages.set(0);
           this.error.set(
-            err?.error?.message ?? 'Could not load the bucket. Check your connection and retry.',
+            err?.error?.message ?? 'Could not load this queue. Check your connection and retry.',
           );
           this.loading.set(false);
         },
@@ -157,6 +213,23 @@ export class BucketComponent implements OnInit {
     this.page.set(0);
     this.load();
   }
+
+  // ---- queue ----
+
+  selectTab(tab: BucketTab): void {
+    if (tab === this.activeTab()) return;
+
+    this.activeTab.set(tab);
+    this.page.set(0);
+    this.load();
+  }
+
+  readonly emptyMessage = computed(() => {
+    if (!this.showTabs()) return 'Your queue is empty. Nothing to review.';
+
+    const active = this.tabs.find((tab) => tab.key === this.activeTab());
+    return active?.empty ?? 'Your queue is empty. Nothing to review.';
+  });
 
   // ---- sorting, paging ----
 

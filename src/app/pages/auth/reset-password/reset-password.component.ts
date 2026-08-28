@@ -33,7 +33,7 @@ export class ResetPasswordComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.token = this.route.snapshot.queryParamMap.get('token') ?? '';
+    this.token = this.route.snapshot.paramMap.get('token') ?? '';
 
     if (!this.token) {
       this.errorMessage = 'Invalid or missing reset token.';

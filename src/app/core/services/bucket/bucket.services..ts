@@ -13,6 +13,7 @@ export class BucketService {
   private readonly http = inject(HttpClient);
 
   private readonly apiUrl = `${API_ORIGIN}/api/loan-applications/bucket`;
+  private readonly disburseUrl = `${API_ORIGIN}/api/loan-disbursements`;
 
   list(params: PageParams = {}): Observable<PageResponse<BucketItem>> {
     const {
@@ -48,5 +49,29 @@ export class BucketService {
     }
 
     return `${API_ORIGIN}/${normalized.replace(/^\/+/, '')}`;
+  }
+
+  disbursementBucket(query: {
+    page: number;
+    size: number;
+    sortBy: string;
+    sortDir: string;
+    search: string;
+  }): Observable<PageResponse<BucketItem>> {
+    let params = new HttpParams()
+      .set('page', query.page)
+      .set('size', query.size)
+      .set('sort', `${query.sortBy},${query.sortDir}`);
+
+    const search = query.search?.trim();
+    if (search) {
+      params = params.set('search', search);
+    }
+
+    return getProtected<PageResponse<BucketItem>>(
+      this.http,
+      `${this.disburseUrl}`,
+      params,
+    ).pipe(map((res) => res.data));
   }
 }

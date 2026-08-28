@@ -64,6 +64,34 @@
   </div>
 </div>
 
+<!-- back office has two queues; every other role has one, so the strip is hidden -->
+@if (showTabs()) {
+  <div class="mb-4 flex flex-wrap gap-2" role="tablist" aria-label="Filter by queue">
+    @for (tab of tabs; track tab.key) {
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="activeTab() === tab.key"
+        class="flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        [class]="
+          activeTab() === tab.key
+            ? 'border-green-700 bg-green-50 text-green-800'
+            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+        "
+        [disabled]="loading()"
+        (click)="selectTab(tab.key)"
+      >
+        {{ tab.label }}
+        @if (activeTab() === tab.key && !loading() && !error()) {
+          <span class="rounded-full bg-green-700 px-2 py-0.5 text-xs font-semibold text-white">
+            {{ totalElements() }}
+          </span>
+        }
+      </button>
+    }
+  </div>
+}
+
 @if (appliedSearch()) {
   <p class="mb-3 text-sm text-slate-500">Showing results for “{{ appliedSearch() }}”</p>
 }
@@ -164,7 +192,7 @@
                   Clear search
                 </button>
               } @else {
-                <p class="text-sm text-slate-600">Your queue is empty. Nothing to review.</p>
+                <p class="text-sm text-slate-600">{{ emptyMessage() }}</p>
               }
             </td>
           </tr>

@@ -20,7 +20,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'reset-password',
+    path: 'reset-password/:token',
     loadComponent: () =>
       import('./pages/auth/reset-password/reset-password.component').then(
         (m) => m.ResetPasswordComponent,
@@ -35,7 +35,7 @@ export const routes: Routes = [
     children: [
       {
         path: 'applications',
-        data: { title: 'Application Review' },
+        data: { title: 'Applications History' },
         loadComponent: () =>
           import('./pages/loan-application/loan-application.component').then(
             (m) => m.LoanApplicationComponent,
