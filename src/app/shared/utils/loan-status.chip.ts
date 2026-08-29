@@ -1,4 +1,4 @@
-import { LoanStatus } from "../../models/loan-application/loan-application.models";
+import { LoanStatus } from '../../models/loan-application/loan-application.models';
 
 export interface StatusChip {
   label: string;
@@ -25,6 +25,10 @@ export const STATUS_STYLES: Record<LoanStatus, StatusChip> = {
   },
   VERIFIED: { label: 'Verified', classes: 'bg-green-50 text-green-700 ring-green-200' },
   DISBURSED: { label: 'Disbursed', classes: 'bg-green-100 text-green-800 ring-green-300' },
+  REJECTED_BY_BACK_OFFICE: {
+    label: 'Rejected — back office',
+    classes: 'bg-red-50 text-red-700 ring-red-200',
+  },
 };
 
 export function statusChip(status: LoanStatus): StatusChip {

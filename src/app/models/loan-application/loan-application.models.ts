@@ -1,5 +1,3 @@
-/* status */
-
 export const LoanStatus = {
   CHECKING: 'CHECKING',
   REJECTED_BY_MARKETING: 'REJECTED_BY_MARKETING',
@@ -8,6 +6,7 @@ export const LoanStatus = {
   PENDING_BACK_OFFICE: 'PENDING_BACK_OFFICE',
   VERIFIED: 'VERIFIED',
   DISBURSED: 'DISBURSED',
+  REJECTED_BY_BACK_OFFICE: 'REJECTED_BY_BACK_OFFICE'
 } as const;
 
 export type LoanStatus = (typeof LoanStatus)[keyof typeof LoanStatus];
@@ -17,6 +16,7 @@ export const ALL_STATUSES = Object.values(LoanStatus) as LoanStatus[];
 export const TERMINAL_STATUSES: readonly LoanStatus[] = [
   LoanStatus.REJECTED_BY_MARKETING,
   LoanStatus.REJECTED_BY_BRANCH_MANAGER,
+  LoanStatus.REJECTED_BY_BACK_OFFICE,
   LoanStatus.DISBURSED,
 ];
 
@@ -117,7 +117,7 @@ export interface LoanVerificationResponse {
   verificationId: number;
   applicationId?: string;
   verifiedBy: UserSummary | null;
-  /** Free text, and localised, e.g. 'Can be Contacted', 'Nada Sambung Tidak Diangkat'. */
+
   callStatus?: string;
   verificationNote?: string;
   verificationDate?: string;
@@ -127,13 +127,14 @@ export interface LoanDisbursementResponse {
   disbursementId: number;
   applicationId?: string;
   processedBy: UserSummary | null;
+  decision?: DecisionOutcome | string;
+  decisionNote?: string;
   disbursedAmount?: number;
   bankName?: string;
   accountNumber?: string;
+  accountName?: string;
   disbursementDate?: string;
 }
-
-/* application */
 
 export interface LoanApplication {
   applicationId: string;
@@ -145,6 +146,9 @@ export interface LoanApplication {
   status: LoanStatus;
   /** e.g. '2026-08-22' */
   submissionDate: string;
+  bank: string;
+  bankAccountNumber: string;
+  bankAccountName: string;
 
   documents: LoanDocumentResponse[] | null;
   review: LoanReviewResponse | null;
@@ -154,15 +158,6 @@ export interface LoanApplication {
   disbursement: LoanDisbursementResponse | null;
 }
 
-export interface LoanReviewRequest {
-  applicationId: string;
-  approve?: boolean;
-  recommendation: ReviewRecommendation;
-  reviewNote?: string;
-  note?: string;
-}
-
-/* query */
 export type SortDirection = 'asc' | 'desc';
 
 export const SORTABLE_FIELDS = [
@@ -185,4 +180,36 @@ export interface LoanApplicationQuery {
 
   statuses?: LoanStatus[];
   search?: string;
+}
+
+export interface BranchManagerDecisionRequest {
+  applicationId: string;
+  approve: boolean;
+  note?: string;
+}
+
+export const CALL_STATUSES = [
+  'Can be Contacted',
+  'Nada Sambung Tidak Diangkat',
+  'Salah Sambung',
+] as const;
+
+export type CallStatus = (typeof CALL_STATUSES)[number];
+
+export interface LoanVerificationRequest {
+  applicationId: string;
+  callStatus: string;
+  verificationNote?: string;
+}
+
+export interface LoanDisbursementRequest {
+  applicationId: string;
+  approve: boolean
+  note?: string
+}
+
+export interface LoanReviewRequest {
+  applicationId: string;
+  recommendation: 'ACCEPT' | 'REJECT';
+  reviewNote?: string;
 }

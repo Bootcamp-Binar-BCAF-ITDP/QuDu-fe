@@ -41,18 +41,8 @@
       (click)="back()"
       aria-label="Back to the bucket"
     >
-      <svg
-        class="h-5 w-5"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M15 19l-7-7 7-7"
-        />
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
       </svg>
     </button>
 
@@ -69,7 +59,7 @@
         </span>
       </div>
       <p class="mt-1 text-sm text-slate-500">
-        Submitted on {{ app.submissionDate | date: "MMM d, y" }}
+        Submitted on {{ app.submissionDate | date: 'MMM d, y' }}
       </p>
     </div>
   </header>
@@ -79,9 +69,7 @@
     <div class="space-y-5 lg:col-span-2">
       <!-- customer -->
       <section class="rounded-xl border border-slate-200 bg-white p-6">
-        <h2
-          class="border-b border-slate-100 pb-4 text-base font-semibold text-green-800"
-        >
+        <h2 class="border-b border-slate-100 pb-4 text-base font-semibold text-green-800">
           Customer information
         </h2>
 
@@ -97,31 +85,31 @@
             <div>
               <dt class="text-xs text-slate-500">Full name</dt>
               <dd class="mt-0.5 text-sm font-medium text-slate-900">
-                {{ app.customer?.customerName || "—" }}
+                {{ app.customer?.customerName || '—' }}
               </dd>
             </div>
             <div>
               <dt class="text-xs text-slate-500">ID number (NIK)</dt>
               <dd class="mt-0.5 font-mono text-sm text-slate-900">
-                {{ app.customer?.nik || "—" }}
+                {{ app.customer?.nik || '—' }}
               </dd>
             </div>
             <div>
               <dt class="text-xs text-slate-500">Phone</dt>
               <dd class="mt-0.5 text-sm text-slate-900">
-                {{ app.customer?.phoneNumber || "—" }}
+                {{ app.customer?.phoneNumber || '—' }}
               </dd>
             </div>
             <div>
               <dt class="text-xs text-slate-500">Email</dt>
               <dd class="mt-0.5 break-all text-sm text-slate-900">
-                {{ app.customer?.email || "—" }}
+                {{ app.customer?.email || '—' }}
               </dd>
             </div>
             <div class="sm:col-span-2">
               <dt class="text-xs text-slate-500">Address</dt>
               <dd class="mt-0.5 text-sm text-slate-900">
-                {{ app.customer?.address || "—" }}
+                {{ app.customer?.address || '—' }}
               </dd>
             </div>
           </dl>
@@ -130,9 +118,7 @@
 
       <!-- loan request -->
       <section class="rounded-xl border border-slate-200 bg-white p-6">
-        <h2
-          class="border-b border-slate-100 pb-4 text-base font-semibold text-green-800"
-        >
+        <h2 class="border-b border-slate-100 pb-4 text-base font-semibold text-green-800">
           Loan request
         </h2>
 
@@ -164,7 +150,7 @@
           <div>
             <dt class="text-xs text-slate-500">Purpose</dt>
             <dd class="mt-0.5 text-sm text-slate-900">
-              {{ app.purpose || "—" }}
+              {{ app.purpose || '—' }}
             </dd>
           </div>
           <div>
@@ -187,33 +173,24 @@
 
       <!-- documents -->
       <section class="rounded-xl border border-slate-200 bg-white p-6">
-        <h2
-          class="border-b border-slate-100 pb-4 text-base font-semibold text-green-800"
-        >
+        <h2 class="border-b border-slate-100 pb-4 text-base font-semibold text-green-800">
           Uploaded documents
         </h2>
 
         @if (documents().length) {
           <div class="mt-5 grid gap-4 sm:grid-cols-2">
             @for (doc of documents(); track doc.documentId) {
-              <article
-                class="overflow-hidden rounded-lg border border-slate-200"
-              >
+              <article class="overflow-hidden rounded-lg border border-slate-200">
                 <div class="px-4 pt-4">
                   <p class="text-sm font-semibold text-slate-900">
                     {{ documentLabel(doc) }}
                   </p>
-                  <p
-                    class="truncate text-xs text-slate-500"
-                    [title]="doc.fileName"
-                  >
+                  <p class="truncate text-xs text-slate-500" [title]="doc.fileName">
                     {{ extension(doc) }} · {{ doc.fileName }}
                   </p>
                 </div>
 
-                <div
-                  class="mt-3 flex h-40 items-center justify-center bg-slate-50 px-4"
-                >
+                <div class="mt-3 flex h-40 items-center justify-center bg-slate-50 px-4">
                   @if (isImage(doc)) {
                     <img
                       [src]="documentUrl(doc)"
@@ -221,9 +198,7 @@
                       class="max-h-40 w-full object-contain py-2"
                     />
                   } @else {
-                    <div
-                      class="flex flex-col items-center gap-2 text-slate-400"
-                    >
+                    <div class="flex flex-col items-center gap-2 text-slate-400">
                       <svg
                         class="h-10 w-10"
                         fill="none"
@@ -237,15 +212,9 @@
                           stroke-linejoin="round"
                           d="M8 3h6l4 4v14a1 1 0 01-1 1H8a1 1 0 01-1-1V4a1 1 0 011-1z"
                         />
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M14 3v5h5"
-                        />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 3v5h5" />
                       </svg>
-                      <span class="text-xs font-medium">{{
-                        extension(doc)
-                      }}</span>
+                      <span class="text-xs font-medium">{{ extension(doc) }}</span>
                     </div>
                   }
                 </div>
@@ -297,7 +266,6 @@
 
     <!-- right column -->
     <div class="space-y-5">
-      <!-- what this application needs next -->
       <section class="rounded-xl border-2 border-green-700 bg-white p-6">
         <h2 class="text-base font-semibold text-green-800">Your action</h2>
 
@@ -318,15 +286,10 @@
           } @else {
             @switch (mode()) {
               <!-- marketing -->
-              @case ("MARKETING_REVIEW") {
-                <label
-                  class="text-sm font-medium text-slate-700"
-                  for="bucket-note"
-                >
+              @case ('MARKETING_REVIEW') {
+                <label class="text-sm font-medium text-slate-700" for="bucket-note">
                   Review note
-                  <span class="font-normal text-slate-500"
-                    >— required when you reject</span
-                  >
+                  <span class="font-normal text-slate-500">— required when you reject</span>
                 </label>
 
                 <div class="mt-2 flex flex-col gap-3">
@@ -355,22 +318,17 @@
                       [disabled]="busy()"
                       (click)="submitReview('ACCEPT')"
                     >
-                      {{ busy() ? "Sending…" : "Recommend" }}
+                      {{ busy() ? 'Sending…' : 'Recommend' }}
                     </button>
                   </div>
                 </div>
               }
 
               <!-- branch manager -->
-              @case ("BM_DECISION") {
-                <label
-                  class="text-sm font-medium text-slate-700"
-                  for="bucket-note"
-                >
+              @case ('BM_DECISION') {
+                <label class="text-sm font-medium text-slate-700" for="bucket-note">
                   Decision note
-                  <span class="font-normal text-slate-500"
-                    >— required when you reject</span
-                  >
+                  <span class="font-normal text-slate-500">— required when you reject</span>
                 </label>
 
                 <div class="mt-2 flex flex-col gap-3">
@@ -399,23 +357,19 @@
                       [disabled]="busy()"
                       (click)="submitDecision(true)"
                     >
-                      {{ busy() ? "Approving…" : "Approve" }}
+                      {{ busy() ? 'Approving…' : 'Approve' }}
                     </button>
                   </div>
                 </div>
               }
 
               <!-- back office: log the call -->
-              @case ("BACK_OFFICE_CALL") {
-                <p class="text-sm font-medium text-slate-700">
-                  Log the verification call
-                </p>
+              @case ('BACK_OFFICE_CALL') {
+                <p class="text-sm font-medium text-slate-700">Log the verification call</p>
 
                 <div class="mt-2 flex flex-col gap-3">
                   <div>
-                    <label class="sr-only" for="call-status"
-                      >Call outcome</label
-                    >
+                    <label class="sr-only" for="call-status">Call outcome</label>
                     <select
                       id="call-status"
                       [ngModel]="callStatus()"
@@ -442,84 +396,99 @@
                     [disabled]="busy()"
                     (click)="logCall()"
                   >
-                    {{ busy() ? "Saving…" : "Log call" }}
+                    {{ busy() ? 'Saving…' : 'Log call' }}
                   </button>
                 </div>
 
                 <p class="mt-2 text-xs text-slate-500">
-                  Only “Can be Contacted” moves this forward. The other outcomes
-                  keep it in your queue for another attempt.
+                  Only “Can be Contacted” moves this forward. The other outcomes keep it in your
+                  queue for another attempt.
                 </p>
               }
 
               <!-- back office: disburse -->
-              @case ("BACK_OFFICE_DISBURSE") {
-                <p class="text-sm font-medium text-slate-700">
-                  Disburse this loan
-                </p>
+              @case ('BACK_OFFICE_DISBURSE') {
+                <p class="text-sm font-medium text-slate-700">Disburse this loan</p>
 
-                <div class="mt-2 grid gap-3">
-                  <div>
-                    <label class="text-xs text-slate-500" for="bank-name"
-                      >Bank</label
+                <div class="mt-2 rounded-lg border border-slate-200 bg-slate-50/70 p-4">
+                  <p class="text-xs font-medium text-slate-500">Money goes to</p>
+
+                  <dl class="mt-3 space-y-2.5">
+                    <div class="flex items-baseline justify-between gap-3">
+                      <dt class="text-xs text-slate-500">Bank</dt>
+                      <dd class="text-sm font-medium text-slate-900">
+                        {{ app.bank || '—' }}
+                      </dd>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-3">
+                      <dt class="text-xs text-slate-500">Account name</dt>
+                      <dd class="text-sm text-slate-900">
+                        {{ app.bankAccountName || '—' }}
+                      </dd>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-3">
+                      <dt class="text-xs text-slate-500">Account number</dt>
+                      <dd class="font-mono text-sm text-slate-900">
+                        {{ app.bankAccountNumber || '—' }}
+                      </dd>
+                    </div>
+                    <div
+                      class="flex items-baseline justify-between gap-3 border-t border-dashed border-slate-200 pt-2.5"
                     >
-                    <input
-                      id="bank-name"
-                      type="text"
-                      [ngModel]="bankName()"
-                      (ngModelChange)="bankName.set($event)"
-                      placeholder="e.g. BCA"
-                      class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-green-700 focus:outline-none focus:ring-1 focus:ring-green-700"
-                    />
-                  </div>
-
-                  <div>
-                    <label class="text-xs text-slate-500" for="account-number"
-                      >Account number</label
-                    >
-                    <input
-                      id="account-number"
-                      type="text"
-                      inputmode="numeric"
-                      [ngModel]="accountNumber()"
-                      (ngModelChange)="accountNumber.set($event)"
-                      placeholder="Recipient account"
-                      class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 font-mono text-sm text-slate-900 placeholder:font-sans placeholder:text-slate-400 focus:border-green-700 focus:outline-none focus:ring-1 focus:ring-green-700"
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      class="text-xs text-slate-500"
-                      for="disbursed-amount"
-                    >
-                      Amount <span class="text-slate-400">— optional</span>
-                    </label>
-                    <input
-                      id="disbursed-amount"
-                      type="number"
-                      min="0"
-                      [ngModel]="amount()"
-                      (ngModelChange)="amount.set($event)"
-                      [placeholder]="formatRupiah(app.requestedAmount)"
-                      class="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-green-700 focus:outline-none focus:ring-1 focus:ring-green-700"
-                    />
-                  </div>
-
-                  <button
-                    type="button"
-                    class="mt-1 h-[42px] w-full cursor-pointer rounded-lg bg-green-800 px-5 text-sm font-medium text-white transition hover:bg-green-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    [disabled]="busy() || !disburseReady()"
-                    (click)="disburse()"
-                  >
-                    {{ busy() ? "Disbursing…" : "Disburse" }}
-                  </button>
+                      <dt class="text-xs text-slate-500">Amount</dt>
+                      <dd class="text-sm font-semibold text-green-800">
+                        {{ formatRupiah(app.requestedAmount) }}
+                      </dd>
+                    </div>
+                  </dl>
                 </div>
 
-                <p class="mt-2 text-xs text-slate-500">
-                  Leave the amount empty to pay out the full requested
-                  {{ formatRupiah(app.requestedAmount) }}.
-                </p>
+                <label class="mt-3 block text-sm font-medium text-slate-700" for="disburse-note">
+                  Note
+                  <span class="font-normal text-slate-500">— required when you reject</span>
+                </label>
+
+                <div class="mt-2 flex flex-col gap-3">
+                  <textarea
+                    id="disburse-note"
+                    rows="2"
+                    [ngModel]="note()"
+                    (ngModelChange)="note.set($event)"
+                    placeholder="Anything worth recording about this payout?"
+                    class="flex-1 resize-none rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-green-700 focus:outline-none focus:ring-1 focus:ring-green-700"
+                  ></textarea>
+
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      class="cursor-pointer rounded-lg border border-red-300 px-4 py-2.5 text-sm font-medium text-red-700 transition hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+                      [disabled]="busy()"
+                      (click)="rejectDisbursement()"
+                    >
+                      Reject
+                    </button>
+
+                    <button
+                      type="button"
+                      class="cursor-pointer rounded-lg bg-green-800 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-green-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      [disabled]="busy() || !disburseReady()"
+                      (click)="disburse()"
+                    >
+                      {{ busy() ? 'Disbursing…' : 'Disburse' }}
+                    </button>
+                  </div>
+                </div>
+
+                @if (disburseReady()) {
+                  <p class="mt-2 text-xs text-slate-500">
+                    The full requested amount goes to the account above, and the customer gets a
+                    confirmation email.
+                  </p>
+                } @else {
+                  <p class="mt-2 text-xs text-red-700">
+                    No bank account on file for this application, so it cannot be disbursed.
+                  </p>
+                }
               }
             }
 
@@ -536,10 +505,7 @@
       <section class="rounded-xl border border-slate-200 bg-white p-6">
         <h2 class="text-base font-semibold text-slate-900">Marketing review</h2>
 
-        <div
-          class="mt-4 rounded-lg border p-4"
-          [class]="recommendation().classes"
-        >
+        <div class="mt-4 rounded-lg border p-4" [class]="recommendation().classes">
           <p class="text-xs opacity-80">Recommendation</p>
           <p class="mt-0.5 text-base font-semibold">
             {{ recommendation().label }}
@@ -551,9 +517,7 @@
             <div class="flex items-center justify-between gap-3">
               <dt class="text-sm text-slate-600">
                 Affordability
-                <span class="block text-xs text-slate-400"
-                  >derived from DTI</span
-                >
+                <span class="block text-xs text-slate-400">derived from DTI</span>
               </dt>
               <dd>
                 <span
@@ -564,9 +528,7 @@
                 </span>
               </dd>
             </div>
-            <div
-              class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100"
-            >
+            <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
               <div
                 class="h-full rounded-full transition-all"
                 [class]="riskBand().barClasses"
@@ -586,9 +548,7 @@
                 }
               </dd>
             </div>
-            <div
-              class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100"
-            >
+            <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
               <div
                 class="h-full rounded-full transition-all"
                 [class]="riskBand().barClasses"
@@ -608,23 +568,17 @@
               {{ app.review?.reviewNote }}
             </p>
             @if (app.review?.marketing?.fullName) {
-              <p class="mt-2 text-xs text-slate-500">
-                — {{ app.review?.marketing?.fullName }}
-              </p>
+              <p class="mt-2 text-xs text-slate-500">— {{ app.review?.marketing?.fullName }}</p>
             }
           } @else {
-            <p class="mt-2 text-sm text-slate-500">
-              No marketing notes recorded yet.
-            </p>
+            <p class="mt-2 text-sm text-slate-500">No marketing notes recorded yet.</p>
           }
         </div>
       </section>
 
       <!-- timeline -->
       <section class="rounded-xl border border-slate-200 bg-white p-6">
-        <h2 class="text-base font-semibold text-slate-900">
-          Application timeline
-        </h2>
+        <h2 class="text-base font-semibold text-slate-900">Application timeline</h2>
 
         <ol class="mt-5">
           @for (stage of stages(); track stage.key; let last = $last) {
@@ -638,12 +592,8 @@
 
               <span class="relative mt-0.5 shrink-0" aria-hidden="true">
                 @switch (stage.state) {
-                  @case ("done") {
-                    <svg
-                      class="h-5 w-5 text-green-600"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
+                  @case ('done') {
+                    <svg class="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fill-rule="evenodd"
                         d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.7-9.3a1 1 0 00-1.4-1.4L9 10.6 7.7 9.3a1 1 0 10-1.4 1.4l2 2a1 1 0 001.4 0l4-4z"
@@ -651,12 +601,8 @@
                       />
                     </svg>
                   }
-                  @case ("failed") {
-                    <svg
-                      class="h-5 w-5 text-red-600"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
+                  @case ('failed') {
+                    <svg class="h-5 w-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fill-rule="evenodd"
                         d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.7 7.3a1 1 0 00-1.4 1.4L8.6 10l-1.3 1.3a1 1 0 101.4 1.4L10 11.4l1.3 1.3a1 1 0 001.4-1.4L11.4 10l1.3-1.3a1 1 0 00-1.4-1.4L10 8.6 8.7 7.3z"
@@ -664,7 +610,7 @@
                       />
                     </svg>
                   }
-                  @case ("current") {
+                  @case ('current') {
                     <span class="flex h-5 w-5 items-center justify-center">
                       <span
                         class="h-2.5 w-2.5 rounded-full bg-amber-500 ring-4 ring-amber-100"
@@ -673,9 +619,7 @@
                   }
                   @default {
                     <span class="flex h-5 w-5 items-center justify-center">
-                      <span
-                        class="h-2.5 w-2.5 rounded-full bg-slate-200"
-                      ></span>
+                      <span class="h-2.5 w-2.5 rounded-full bg-slate-200"></span>
                     </span>
                   }
                 }
@@ -695,17 +639,15 @@
                   {{ stage.title }}
                 </p>
 
-                @if (stage.state === "current") {
-                  <p class="text-xs font-medium text-amber-600">
-                    Current status
-                  </p>
+                @if (stage.state === 'current') {
+                  <p class="text-xs font-medium text-amber-600">Current status</p>
                 } @else if (stage.date) {
                   <p class="text-xs text-slate-500">
-                    {{ stage.date | date: "MMM d, y" }}
+                    {{ stage.date | date: 'MMM d, y' }}
                   </p>
                 }
 
-                @if (stage.actor && stage.state !== "upcoming") {
+                @if (stage.actor && stage.state !== 'upcoming') {
                   <p class="text-xs text-slate-500">by {{ stage.actor }}</p>
                 }
               </div>
@@ -717,9 +659,7 @@
       <!-- decision on record -->
       @if (decision(); as record) {
         <section class="rounded-xl border border-slate-200 bg-white p-6">
-          <h2 class="text-base font-semibold text-slate-900">
-            Branch manager decision
-          </h2>
+          <h2 class="text-base font-semibold text-slate-900">Branch manager decision</h2>
 
           <span
             class="mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset"
@@ -739,8 +679,8 @@
           }
 
           <p class="mt-3 text-xs text-slate-500">
-            {{ record.branchManager?.fullName || "Unknown" }} ·
-            {{ record.decidedAt | date: "MMM d, y" }}
+            {{ record.branchManager?.fullName || 'Unknown' }} ·
+            {{ record.decidedAt | date: 'MMM d, y' }}
           </p>
         </section>
       }
@@ -748,13 +688,9 @@
       <!-- verification calls -->
       @if (verifications().length) {
         <section class="rounded-xl border border-slate-200 bg-white p-6">
-          <h2 class="text-base font-semibold text-slate-900">
-            Verification calls
-          </h2>
+          <h2 class="text-base font-semibold text-slate-900">Verification calls</h2>
           <p class="mt-1 text-xs text-slate-500">
-            {{ verifications().length }} attempt{{
-              verifications().length === 1 ? "" : "s"
-            }}
+            {{ verifications().length }} attempt{{ verifications().length === 1 ? '' : 's' }}
             logged.
           </p>
 
@@ -769,7 +705,7 @@
                     {{ call.callStatus }}
                   </span>
                   <span class="text-xs text-slate-500">
-                    {{ call.verificationDate | date: "MMM d, y" }}
+                    {{ call.verificationDate | date: 'MMM d, y' }}
                   </span>
                 </div>
 
@@ -779,9 +715,7 @@
                   </p>
                 }
                 @if (call.verifiedBy?.fullName) {
-                  <p class="mt-1.5 text-xs text-slate-500">
-                    by {{ call.verifiedBy?.fullName }}
-                  </p>
+                  <p class="mt-1.5 text-xs text-slate-500">by {{ call.verifiedBy?.fullName }}</p>
                 }
               </li>
             }
@@ -802,27 +736,25 @@
             <div class="flex items-baseline justify-between gap-3">
               <dt class="text-sm text-slate-600">Bank</dt>
               <dd class="text-sm text-slate-900">
-                {{ payout.bankName || "—" }}
+                {{ payout.bankName || '—' }}
               </dd>
             </div>
             <div class="flex items-baseline justify-between gap-3">
               <dt class="text-sm text-slate-600">Account</dt>
               <dd class="font-mono text-sm text-slate-900">
-                {{ payout.accountNumber || "—" }}
+                {{ payout.accountNumber || '—' }}
               </dd>
             </div>
             <div class="flex items-baseline justify-between gap-3">
               <dt class="text-sm text-slate-600">Paid out</dt>
               <dd class="text-sm text-slate-900">
-                {{ payout.disbursementDate | date: "MMM d, y" }}
+                {{ payout.disbursementDate | date: 'MMM d, y' }}
               </dd>
             </div>
           </dl>
 
           @if (payout.processedBy?.fullName) {
-            <p class="mt-3 text-xs text-slate-500">
-              by {{ payout.processedBy?.fullName }}
-            </p>
+            <p class="mt-3 text-xs text-slate-500">by {{ payout.processedBy?.fullName }}</p>
           }
         </section>
       }

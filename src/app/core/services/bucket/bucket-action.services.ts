@@ -2,52 +2,16 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import {
+  BranchManagerDecisionRequest,
   LoanApplication,
+  LoanDisbursementRequest,
   LoanDisbursementResponse,
+  LoanReviewRequest,
   LoanReviewResponse,
+  LoanVerificationRequest,
   LoanVerificationResponse,
 } from '../../../models/loan-application/loan-application.models';
-
-interface ApiResponse<T> {
-  message: string;
-  data: T;
-}
-
-export const CALL_STATUSES = [
-  'Can be Contacted',
-  'Nada Sambung Tidak Diangkat',
-  'Salah Sambung',
-] as const;
-
-export type CallStatus = (typeof CALL_STATUSES)[number];
-
-export interface LoanReviewRequest {
-  applicationId: string;
-  recommendation: 'ACCEPT' | 'REJECT';
-  reviewNote?: string;
-}
-
-export interface BranchManagerDecisionRequest {
-  applicationId: string;
-  approve: boolean;
-  note?: string;
-}
-
-export interface LoanVerificationRequest {
-  applicationId: string;
-  backOfficeUserId: string;
-  callStatus: CallStatus;
-  verificationNote?: string;
-}
-
-export interface LoanDisbursementRequest {
-  applicationId: string;
-  backOfficeUserId: string;
-
-  disbursedAmount?: number;
-  bankName: string;
-  accountNumber: string;
-}
+import { ApiResponse } from '../../../shared/utils/apiResponse.component';
 
 @Injectable({ providedIn: 'root' })
 export class BucketActionsService {

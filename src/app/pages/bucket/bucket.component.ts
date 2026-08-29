@@ -37,6 +37,10 @@ const STATUS_STYLES: Record<LoanStatus, Chip> = {
   },
   VERIFIED: { label: 'Verified', classes: 'bg-green-50 text-green-700 ring-green-200' },
   DISBURSED: { label: 'Disbursed', classes: 'bg-green-100 text-green-800 ring-green-300' },
+  REJECTED_BY_BACK_OFFICE: {
+    label: 'Rejected — back office',
+    classes: 'bg-red-50 text-red-700 ring-red-200',
+  },
 };
 
 const PAGE_SIZES = [5, 10, 25, 50];
@@ -96,7 +100,7 @@ export class BucketComponent implements OnInit {
    * did before, so nothing breaks until you connect it.
    */
 
-  readonly role = computed(() => this.auth.user()?.role ?? null)
+  readonly role = computed(() => this.auth.user()?.role ?? null);
   // readonly role = signal<RoleName | null>(null);
 
   readonly showTabs = computed(() => this.role() === 'BACK_OFFICE');
@@ -171,27 +175,25 @@ export class BucketComponent implements OnInit {
         ? this.service.disbursementBucket(query)
         : this.service.list(query);
 
-    source
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (res) => {
-          this.rows.set(res.content ?? []);
-          this.totalElements.set(res.totalElements);
-          this.totalPages.set(res.totalPages);
-          this.first.set(res.first);
-          this.last.set(res.last);
-          this.loading.set(false);
-        },
-        error: (err) => {
-          this.rows.set([]);
-          this.totalElements.set(0);
-          this.totalPages.set(0);
-          this.error.set(
-            err?.error?.message ?? 'Could not load this queue. Check your connection and retry.',
-          );
-          this.loading.set(false);
-        },
-      });
+    source.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (res) => {
+        this.rows.set(res.content ?? []);
+        this.totalElements.set(res.totalElements);
+        this.totalPages.set(res.totalPages);
+        this.first.set(res.first);
+        this.last.set(res.last);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.rows.set([]);
+        this.totalElements.set(0);
+        this.totalPages.set(0);
+        this.error.set(
+          err?.error?.message ?? 'Could not load this queue. Check your connection and retry.',
+        );
+        this.loading.set(false);
+      },
+    });
   }
 
   // ---- search ----

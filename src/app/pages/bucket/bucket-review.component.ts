@@ -15,10 +15,7 @@ import { LoanApplicationService } from '../../core/services/loan-application/loa
 export type RoleName = 'MARKETING' | 'BRANCH_MANAGER' | 'BACK_OFFICE' | 'ADMIN';
 
 export type ActionMode =
-  | 'MARKETING_REVIEW'
-  | 'BM_DECISION'
-  | 'BACK_OFFICE_CALL'
-  | 'BACK_OFFICE_DISBURSE';
+  'MARKETING_REVIEW' | 'BM_DECISION' | 'BACK_OFFICE_CALL' | 'BACK_OFFICE_DISBURSE';
 
 /**
  * getMyBucket already filters by role server-side, so an application's status
@@ -51,6 +48,7 @@ const WAITING_ON: Record<LoanStatus, string> = {
   PENDING_BACK_OFFICE: 'Waiting on the back office to reach the customer.',
   VERIFIED: 'Verified. Waiting on the back office to disburse.',
   DISBURSED: 'Closed. The loan has been disbursed.',
+  REJECTED_BY_BACK_OFFICE: 'Closed. The back office rejected it at disbursement.',
 };
 
 /**
@@ -90,9 +88,16 @@ const STATUS_STYLES: Record<LoanStatus, Chip> = {
   },
   VERIFIED: { label: 'Verified', classes: 'bg-green-50 text-green-700 ring-green-200' },
   DISBURSED: { label: 'Disbursed', classes: 'bg-green-100 text-green-800 ring-green-300' },
+  REJECTED_BY_BACK_OFFICE: {
+    label: 'Rejected — back office',
+    classes: 'bg-red-50 text-red-700 ring-red-200',
+  },
 };
 
-const NEUTRAL_CHIP: Chip = { label: 'Unknown', classes: 'bg-slate-100 text-slate-700 ring-slate-200' };
+const NEUTRAL_CHIP: Chip = {
+  label: 'Unknown',
+  classes: 'bg-slate-100 text-slate-700 ring-slate-200',
+};
 
 const MONTHLY_INTEREST_RATE = 0.01;
 
@@ -120,11 +125,13 @@ const STAGE_AT: Record<LoanStatus, number> = {
   PENDING_BACK_OFFICE: 3,
   VERIFIED: 4,
   DISBURSED: 5,
+  REJECTED_BY_BACK_OFFICE: 5,
 };
 
 const REJECTED_STATUSES: readonly LoanStatus[] = [
   'REJECTED_BY_MARKETING',
   'REJECTED_BY_BRANCH_MANAGER',
+  'REJECTED_BY_BACK_OFFICE',
 ];
 
 interface RiskBand {
@@ -163,9 +170,6 @@ export class BucketReviewComponent {
   // ---- action form state ----
   readonly note = signal('');
   readonly callStatus = signal<CallStatus>('Can be Contacted');
-  readonly bankName = signal('');
-  readonly accountNumber = signal('');
-  readonly amount = signal<number | null>(null);
 
   readonly busy = signal(false);
   readonly actionError = signal<string | null>(null);
@@ -238,7 +242,6 @@ export class BucketReviewComponent {
     () => this.mode() === 'BM_DECISION' && !this.application()?.review?.marketing,
   );
 
-  /** Why there is nothing to do here, phrased for the person reading it. */
   readonly idleMessage = computed<string | null>(() => {
     const app = this.application();
     if (!app || this.done()) return null;
@@ -250,11 +253,22 @@ export class BucketReviewComponent {
     return WAITING_ON[app.status] ?? 'This application has no action pending.';
   });
 
-  readonly disburseReady = computed(
-    () => this.bankName().trim().length > 0 && this.accountNumber().trim().length > 0,
-  );
+  /** Where the money goes. Recorded on the application, not typed by the operator. */
+  readonly payoutAccount = computed(() => {
+    const app = this.application();
+    if (!app) return null;
 
-  // ---- actions ----
+    return {
+      bank: (app.bank ?? '').trim(),
+      accountNumber: (app.bankAccountNumber ?? '').trim(),
+      accountName: (app.bankAccountName ?? '').trim(),
+    };
+  });
+
+  readonly disburseReady = computed(() => {
+    const account = this.payoutAccount();
+    return !!account && account.bank.length > 0 && account.accountNumber.length > 0;
+  });
 
   /** Marketing: CHECKING -> PENDING_BRANCH_MANAGER or REJECTED_BY_MARKETING. */
   submitReview(recommendation: 'ACCEPT' | 'REJECT'): void {
@@ -305,20 +319,13 @@ export class BucketReviewComponent {
   /** Back office: only 'Can be Contacted' moves PENDING_BACK_OFFICE -> VERIFIED. */
   logCall(): void {
     const app = this.application();
-    const userId = this.currentUserId();
     if (!app) return;
-
-    if (!userId) {
-      this.actionError.set('This page has no signed-in user id yet. Wire currentUserId to your auth service.');
-      return;
-    }
 
     const status = this.callStatus();
 
     this.run(
       this.service.logCall({
         applicationId: app.applicationId,
-        backOfficeUserId: userId,
         callStatus: status,
         verificationNote: this.note().trim() || undefined,
       }),
@@ -331,35 +338,45 @@ export class BucketReviewComponent {
   /** Back office: VERIFIED -> DISBURSED. */
   disburse(): void {
     const app = this.application();
-    const userId = this.currentUserId();
     if (!app) return;
 
-    if (!userId) {
-      this.actionError.set('This page has no signed-in user id yet. Wire currentUserId to your auth service.');
-      return;
-    }
-
     if (!this.disburseReady()) {
-      this.actionError.set('Enter the bank name and account number before disbursing.');
+      this.actionError.set(
+        'This application has no bank account on file, so it cannot be disbursed.',
+      );
       return;
     }
 
     this.run(
       this.service.disburse({
         applicationId: app.applicationId,
-        backOfficeUserId: userId,
-        disbursedAmount: this.amount() ?? undefined,
-        bankName: this.bankName().trim(),
-        accountNumber: this.accountNumber().trim(),
+        approve: true,
+        note: this.note().trim() || undefined,
       }),
-      'Disbursed. The application is complete.',
+      'Disbursed. The application is complete and the customer has been notified by email.',
     );
   }
 
-  /**
-   * Every endpoint returns a different sub-resource, so refetch the whole
-   * application afterwards rather than patching four shapes into one.
-   */
+  rejectDisbursement(): void {
+    const app = this.application();
+    if (!app) return;
+
+    const trimmed = this.note().trim();
+    if (!trimmed) {
+      this.actionError.set('Add a note explaining the rejection before you send it.');
+      return;
+    }
+
+    this.run(
+      this.service.disburse({
+        applicationId: app.applicationId,
+        approve: false,
+        note: trimmed,
+      }),
+      'Rejected. The applicant will be notified.',
+    );
+  }
+
   private run(call: Observable<unknown>, successMessage: string): void {
     if (this.busy()) return;
 
@@ -387,9 +404,6 @@ export class BucketReviewComponent {
 
   private resetForm(): void {
     this.note.set('');
-    this.bankName.set('');
-    this.accountNumber.set('');
-    this.amount.set(null);
   }
 
   /** BusinessException statuses, turned into something the operator can act on. */
@@ -415,8 +429,6 @@ export class BucketReviewComponent {
         return 'That did not save. Try again.';
     }
   }
-
-  // ---- derived money ----
 
   readonly estimatedInstallment = computed<number | null>(() => {
     const app = this.application();
@@ -444,26 +456,40 @@ export class BucketReviewComponent {
     return pct == null ? 0 : Math.min(100, pct);
   });
 
-  /**
-   * Derived from DTI, not returned by the API. It is an affordability signal,
-   * not a bureau grade — the template labels it as such.
-   */
   readonly riskBand = computed<RiskBand>(() => {
     const dti = this.debtToIncome();
 
     if (dti == null) {
-      return { label: 'UNKNOWN', chipClasses: 'bg-slate-200 text-slate-600', barClasses: 'bg-slate-300', width: 0 };
+      return {
+        label: 'UNKNOWN',
+        chipClasses: 'bg-slate-200 text-slate-600',
+        barClasses: 'bg-slate-300',
+        width: 0,
+      };
     }
     if (dti <= 0.25) {
-      return { label: 'LOW', chipClasses: 'bg-green-600 text-white', barClasses: 'bg-green-600', width: 25 };
+      return {
+        label: 'LOW',
+        chipClasses: 'bg-green-600 text-white',
+        barClasses: 'bg-green-600',
+        width: 25,
+      };
     }
     if (dti <= HEALTHY_DTI) {
-      return { label: 'MEDIUM', chipClasses: 'bg-amber-500 text-white', barClasses: 'bg-amber-500', width: 60 };
+      return {
+        label: 'MEDIUM',
+        chipClasses: 'bg-amber-500 text-white',
+        barClasses: 'bg-amber-500',
+        width: 60,
+      };
     }
-    return { label: 'HIGH', chipClasses: 'bg-red-600 text-white', barClasses: 'bg-red-600', width: 100 };
+    return {
+      label: 'HIGH',
+      chipClasses: 'bg-red-600 text-white',
+      barClasses: 'bg-red-600',
+      width: 100,
+    };
   });
-
-  // ---- derived display ----
 
   readonly chip = computed<Chip>(() => {
     const app = this.application();
@@ -473,14 +499,12 @@ export class BucketReviewComponent {
 
   readonly documents = computed<LoanDocumentResponse[]>(() => this.application()?.documents ?? []);
 
-  /** Newest call first. The API orders by date desc, but do not rely on it. */
   readonly verifications = computed(() =>
     [...(this.application()?.verifications ?? [])].sort((a, b) =>
       (b.verificationDate ?? '').localeCompare(a.verificationDate ?? ''),
     ),
   );
 
-  /** The API serialises the branch manager decision under `bmdecision`. */
   readonly decision = computed(() => this.application()?.bmdecision ?? null);
 
   readonly recommendation = computed(() => {
@@ -549,8 +573,6 @@ export class BucketReviewComponent {
     });
   });
 
-  // ---- documents ----
-
   documentUrl(doc: LoanDocumentResponse): string {
     return this.service.documentUrl(doc);
   }
@@ -571,7 +593,9 @@ export class BucketReviewComponent {
         .filter(Boolean)
         .map((part) => {
           const upper = part.toUpperCase();
-          return DOCUMENT_ACRONYMS.has(upper) ? upper : upper.charAt(0) + part.slice(1).toLowerCase();
+          return DOCUMENT_ACRONYMS.has(upper)
+            ? upper
+            : upper.charAt(0) + part.slice(1).toLowerCase();
         })
         .join(' ') || 'Document'
     );
@@ -581,8 +605,6 @@ export class BucketReviewComponent {
     const url = this.documentUrl(doc);
     if (url) window.open(url, '_blank', 'noopener');
   }
-
-  // ---- formatting ----
 
   /** 'Nada Sambung Tidak Diangkat' comes back as-is; leave the wording alone. */
   callStatusClasses(callStatus: string | null | undefined): string {

@@ -1,20 +1,21 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { LoanApplication } from '../../../models/loan-application/loan-application.models';
+import { BranchManagerDecisionRequest, LoanApplication } from '../../../models/loan-application/loan-application.models';
+import { ApiResponse } from '../../../shared/utils/apiResponse.component';
 
-export type DecisionAction = 'APPROVED' | 'REJECTED';
+// export type DecisionAction = 'APPROVED' | 'REJECTED';
 
-export interface BranchManagerDecisionRequest {
-  applicationId: string;
-  approve: boolean;
-  note?: string;
-}
+// export interface BranchManagerDecisionRequest {
+//   applicationId: string;
+//   approve: boolean;
+//   note?: string;
+// }
 
-interface ApiResponse<T> {
-  message: string;
-  data: T;
-}
+// interface ApiResponse<T> {
+//   message: string;
+//   data: T;
+// }
 
 @Injectable({ providedIn: 'root' })
 export class BranchManagerService {
