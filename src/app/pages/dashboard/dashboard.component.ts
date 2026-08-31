@@ -1,0 +1,333 @@
+import { DatePipe } from '@angular/common';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
+import { ChartData } from 'chart.js';
+import {
+  METRIC_ICONS,
+  MetricCardComponent,
+  TrendDirection,
+} from '../../shared/components/chart/metric-card.component';
+import {
+  DASHBOARD_PERIODS,
+  DashboardPeriod,
+  DashboardResponse,
+  MetricCard,
+} from '../../models/dashboard/dashboard.models';
+import {
+  CHART_COLORS,
+  doughnutChartOptions,
+  lineChartOptions,
+  verticalGradient,
+} from '../../shared/components/chart/chart-theme';
+import { ChartComponent } from '../../shared/components/chart/chart.component';
+import { DashboardService } from '../../core/services/dashboard/dashboard.services';
+
+const PERIOD_TEXT: Record<DashboardPeriod, { label: string; comparison: string }> = {
+  THIS_MONTH: { label: 'This month', comparison: 'vs last month' },
+  LAST_MONTH: { label: 'Last month', comparison: 'vs the month before' },
+  LAST_7_DAYS: { label: 'Last 7 days', comparison: 'vs previous 7 days' },
+  LAST_30_DAYS: { label: 'Last 30 days', comparison: 'vs previous 30 days' },
+  THIS_YEAR: { label: 'This year', comparison: 'vs last year' },
+};
+
+type SummaryKey = keyof DashboardResponse['summary'];
+
+interface CardDef {
+  key: SummaryKey;
+  label: string;
+  money: boolean;
+  /** True where a rise is bad news, so the trend colour flips. */
+  invertTrend: boolean;
+  iconPaths: readonly string[];
+  tileClasses: string;
+  iconClasses: string;
+}
+
+const CARD_DEFS: CardDef[] = [
+  {
+    key: 'totalApplications',
+    label: 'Total Applications',
+    money: false,
+    invertTrend: false,
+    iconPaths: METRIC_ICONS.document,
+    tileClasses: 'bg-green-50',
+    iconClasses: 'text-green-700',
+  },
+  {
+    key: 'pending',
+    label: 'Pending',
+    money: false,
+    invertTrend: false,
+    iconPaths: METRIC_ICONS.clock,
+    tileClasses: 'bg-amber-50',
+    iconClasses: 'text-amber-600',
+  },
+  {
+    key: 'approved',
+    label: 'Approved',
+    money: false,
+    invertTrend: false,
+    iconPaths: METRIC_ICONS.check,
+    tileClasses: 'bg-blue-50',
+    iconClasses: 'text-blue-600',
+  },
+  {
+    key: 'rejected',
+    label: 'Rejected',
+    money: false,
+    invertTrend: true,
+    iconPaths: METRIC_ICONS.cross,
+    tileClasses: 'bg-red-50',
+    iconClasses: 'text-red-600',
+  },
+  {
+    key: 'totalDisbursed',
+    label: 'Total Disbursed',
+    money: true,
+    invertTrend: false,
+    iconPaths: METRIC_ICONS.wallet,
+    tileClasses: 'bg-green-50',
+    iconClasses: 'text-green-700',
+  },
+];
+
+const SLICE_COLORS: Record<string, string> = {
+  pending: CHART_COLORS.amber,
+  approved: CHART_COLORS.green,
+  rejected: CHART_COLORS.red,
+};
+
+const COUNT_FORMAT = new Intl.NumberFormat('id-ID');
+
+export interface CardView {
+  key: SummaryKey;
+  label: string;
+  display: string;
+  change: number | null;
+  direction: TrendDirection;
+  invertTrend: boolean;
+  iconPaths: string[];
+  tileClasses: string;
+  iconClasses: string;
+}
+
+export interface LegendEntry {
+  label: string;
+  color: string;
+}
+
+/** Built from local date parts so the label never slips a day on a timezone shift. */
+function shortDate(iso: string): string {
+  const [year, month, day] = iso.split('-').map(Number);
+  if (!year || !month || !day) return iso;
+  return new Date(year, month - 1, day).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+@Component({
+  selector: 'app-dashboard',
+  standalone: true,
+  imports: [DatePipe, FormsModule, ChartComponent, MetricCardComponent],
+  templateUrl: './dashboard.component.html',
+})
+export class DashboardComponent {
+  private readonly service = inject(DashboardService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly periods = DASHBOARD_PERIODS;
+  readonly period = signal<DashboardPeriod>('THIS_MONTH');
+
+  readonly data = signal<DashboardResponse | null>(null);
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+
+  // Static — no need to rebuild these on every render.
+  readonly lineOptions = lineChartOptions();
+  readonly donutOptions = doughnutChartOptions();
+
+  constructor() {
+    this.load();
+  }
+
+  load(): void {
+    this.loading.set(true);
+    this.error.set(null);
+
+    this.service
+      .getDashboard(this.period())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          this.data.set(data);
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.data.set(null);
+          this.error.set(this.errorMessage(err));
+          this.loading.set(false);
+        },
+      });
+  }
+
+  changePeriod(period: DashboardPeriod): void {
+    if (period === this.period()) return;
+    this.period.set(period);
+    this.load();
+  }
+
+  periodLabel(period: DashboardPeriod): string {
+    return PERIOD_TEXT[period].label;
+  }
+
+  readonly comparisonLabel = computed(() => PERIOD_TEXT[this.period()].comparison);
+
+  private errorMessage(err: unknown): string {
+    const error = err as { status?: number; error?: { message?: string } };
+
+    if (error?.error?.message) return error.error.message;
+
+    switch (error?.status) {
+      case 0:
+        return 'No connection to the server. Check your network and try again.';
+      case 401:
+        return 'Your session expired. Sign in again.';
+      case 403:
+        return 'Your role cannot see the dashboard.';
+      default:
+        return 'Could not load the dashboard. Retry in a moment.';
+    }
+  }
+
+  /* ---- metric cards ---- */
+
+  readonly cards = computed<CardView[]>(() => {
+    const summary = this.data()?.summary;
+    if (!summary) return [];
+
+    return CARD_DEFS.map((def) => {
+      const metric: MetricCard = summary[def.key];
+
+      return {
+        key: def.key,
+        label: def.label,
+        display: def.money
+          ? this.compactRupiah(metric?.value ?? 0)
+          : COUNT_FORMAT.format(metric?.value ?? 0),
+        change: metric?.changePercent ?? null,
+        direction: (metric?.direction ?? 'FLAT') as TrendDirection,
+        invertTrend: def.invertTrend,
+        iconPaths: [...def.iconPaths],
+        tileClasses: def.tileClasses,
+        iconClasses: def.iconClasses,
+      };
+    });
+  });
+
+  /* ---- line chart ---- */
+
+  readonly lineData = computed<ChartData<'line'>>(() => {
+    const points = this.data()?.applicationsOverTime ?? [];
+
+    return {
+      labels: points.map((point) => shortDate(point.date)),
+      datasets: [
+        {
+          label: 'All',
+          data: points.map((point) => point.all),
+          borderColor: CHART_COLORS.green,
+          pointBackgroundColor: CHART_COLORS.green,
+          backgroundColor: verticalGradient(CHART_COLORS.green),
+          fill: true,
+        },
+        {
+          label: 'Approved',
+          data: points.map((point) => point.approved),
+          borderColor: CHART_COLORS.blue,
+          pointBackgroundColor: CHART_COLORS.blue,
+          fill: false,
+        },
+        {
+          label: 'Rejected',
+          data: points.map((point) => point.rejected),
+          borderColor: CHART_COLORS.red,
+          pointBackgroundColor: CHART_COLORS.red,
+          fill: false,
+        },
+        {
+          label: 'Pending',
+          data: points.map((point) => point.pending),
+          borderColor: CHART_COLORS.amber,
+          pointBackgroundColor: CHART_COLORS.amber,
+          fill: false,
+        },
+      ],
+    };
+  });
+
+  /** Rendered as HTML rather than by Chart.js, so it can be styled with Tailwind. */
+  readonly lineLegend = computed<LegendEntry[]>(() =>
+    this.lineData().datasets.map((dataset) => ({
+      label: dataset.label ?? '',
+      color: String(dataset.borderColor ?? CHART_COLORS.slate),
+    })),
+  );
+
+  readonly hasSeries = computed(() => (this.data()?.applicationsOverTime.length ?? 0) > 0);
+
+  /* ---- doughnut ---- */
+
+  readonly donutData = computed<ChartData<'doughnut'>>(() => {
+    const slices = this.data()?.byStatus ?? [];
+
+    return {
+      labels: slices.map((slice) => slice.label),
+      datasets: [
+        {
+          data: slices.map((slice) => slice.count),
+          backgroundColor: slices.map((slice) => SLICE_COLORS[slice.key] ?? CHART_COLORS.slate),
+          borderWidth: 0,
+          hoverOffset: 6,
+        },
+      ],
+    };
+  });
+
+  readonly donutTotal = computed(() => this.data()?.byStatusTotal ?? 0);
+
+  /* ---- formatting ---- */
+
+  formatCount(value: number | null | undefined): string {
+    return value == null ? '—' : COUNT_FORMAT.format(value);
+  }
+
+  sliceColor(key: string): string {
+    return SLICE_COLORS[key] ?? CHART_COLORS.slate;
+  }
+
+  /** Rp 12,75 M rather than Rp 12.750.000.000 — the full figure will not fit the card. */
+  compactRupiah(value: number | null | undefined): string {
+    if (value == null) return '—';
+
+    const units: [number, string][] = [
+      [1e12, 'T'],
+      [1e9, 'M'],
+      [1e6, 'jt'],
+      [1e3, 'rb'],
+    ];
+
+    const absolute = Math.abs(value);
+
+    for (const [size, suffix] of units) {
+      if (absolute >= size) {
+        const scaled = value / size;
+        const digits = Math.abs(scaled) >= 100 ? 0 : 2;
+        return `Rp ${scaled.toFixed(digits).replace('.', ',')} ${suffix}`;
+      }
+    }
+
+    return `Rp ${COUNT_FORMAT.format(Math.round(value))}`;
+  }
+}

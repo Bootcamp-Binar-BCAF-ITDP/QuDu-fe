@@ -34,6 +34,12 @@ export const routes: Routes = [
     loadComponent: () => import('./layout/layout.component').then((m) => m.LayoutComponent),
     children: [
       {
+        path: 'dashboard',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent),
+      },
+      {
         path: 'applications',
         data: { title: 'Applications History' },
         loadComponent: () =>
