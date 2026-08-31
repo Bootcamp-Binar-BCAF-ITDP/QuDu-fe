@@ -57,7 +57,7 @@ export class LoginComponent {
           this.loading.set(false);
 
           if (response.token) {
-            this.router.navigate(['/applications']);
+            this.router.navigate(['/dashboard']);
           } else {
             this.errorMessage = 'Login failed. Token was not received.';
           }
