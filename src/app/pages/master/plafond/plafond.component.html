@@ -1,0 +1,267 @@
+<div class="p-6">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">Plafond Management</h1>
+
+      <p class="text-sm text-gray-500 mt-1">Manage your plafond data</p>
+    </div>
+
+    <!-- Add Plafond -->
+    <button
+      type="button"
+      (click)="addPlafond()"
+      class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+    >
+      + Add Plafond
+    </button>
+  </div>
+
+  <!-- Search -->
+  <div class="mb-4">
+    <input
+      type="text"
+      [(ngModel)]="search"
+      (ngModelChange)="onSearch()"
+      placeholder="Search plafond..."
+      class="w-full md:w-80 px-4 py-2 border border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+    />
+  </div>
+
+  <!-- Table -->
+  <app-table
+    [columns]="columns"
+    [data]="plafond()"
+    [loading]="loading()"
+    emptyMessage="No plafond data available"
+    itemLabel="plafond"
+    [currentPage]="currentPage"
+    [pageSize]="pageSize"
+    [totalItems]="totalElements()"
+    [sortBy]="sortBy"
+    [sortDir]="sortDir"
+    (edit)="editPlafond($event)"
+    (delete)="deletePlafond($event)"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+    (sortChange)="onSortChange($event)"
+  />
+
+  <!-- ADD / EDIT MODAL -->
+  <div *ngIf="modalOpen()" class="fixed inset-0 z-50 flex items-center justify-center">
+    <!-- Overlay -->
+    <div class="absolute inset-0 bg-black/50" (click)="closeModal()"></div>
+
+    <!-- Modal -->
+    <div class="relative w-full max-w-2xl mx-4 bg-white rounded-xl shadow-xl">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-800">
+            {{ editingPlafondId !== null ? 'Edit Plafond' : 'Add Plafond' }}
+          </h2>
+
+          <p class="text-sm text-gray-500 mt-1">
+            {{ editingPlafondId !== null ? 'Update plafond information' : 'Create a new plafond' }}
+          </p>
+        </div>
+
+        <!-- Close -->
+        <button
+          type="button"
+          (click)="closeModal()"
+          class="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+        >
+          &times;
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <form [formGroup]="plafondForm" (ngSubmit)="savePlafond()">
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto">
+          <!-- Level -->
+          <div>
+            <label class="block mb-2 text-sm font-medium text-gray-700">Level</label>
+
+            <input
+              type="number"
+              formControlName="level"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+
+            <p
+              *ngIf="plafondForm.get('level')?.touched && plafondForm.get('level')?.invalid"
+              class="mt-1 text-sm text-red-500"
+            >
+              Level is required and must be at least 1.
+            </p>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label class="block mb-2 text-sm font-medium text-gray-700">Description</label>
+
+            <input
+              type="text"
+              formControlName="description"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+
+            <p
+              *ngIf="
+                plafondForm.get('description')?.touched && plafondForm.get('description')?.invalid
+              "
+              class="mt-1 text-sm text-red-500"
+            >
+              Description is required.
+            </p>
+          </div>
+
+          <!-- Minimum Amount -->
+          <div>
+            <label class="block mb-2 text-sm font-medium text-gray-700">Minimum Amount</label>
+
+            <input
+              type="number"
+              formControlName="minimumAmount"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+
+            <p
+              *ngIf="
+                plafondForm.get('minimumAmount')?.touched &&
+                plafondForm.get('minimumAmount')?.invalid
+              "
+              class="mt-1 text-sm text-red-500"
+            >
+              Minimum amount is required.
+            </p>
+          </div>
+
+          <!-- Maximum Amount -->
+          <div>
+            <label class="block mb-2 text-sm font-medium text-gray-700">Maximum Amount</label>
+
+            <input
+              type="number"
+              formControlName="maximumAmount"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+
+            <p
+              *ngIf="
+                plafondForm.get('maximumAmount')?.touched &&
+                plafondForm.get('maximumAmount')?.invalid
+              "
+              class="mt-1 text-sm text-red-500"
+            >
+              Maximum amount is required.
+            </p>
+          </div>
+
+          <!-- Min Tenor -->
+          <div>
+            <label class="block mb-2 text-sm font-medium text-gray-700">Min Tenor (months)</label>
+
+            <input
+              type="number"
+              formControlName="minTenor"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+
+            <p
+              *ngIf="plafondForm.get('minTenor')?.touched && plafondForm.get('minTenor')?.invalid"
+              class="mt-1 text-sm text-red-500"
+            >
+              Min tenor is required.
+            </p>
+          </div>
+
+          <!-- Max Tenor -->
+          <div>
+            <label class="block mb-2 text-sm font-medium text-gray-700">Max Tenor (months)</label>
+
+            <input
+              type="number"
+              formControlName="maxTenor"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+
+            <p
+              *ngIf="plafondForm.get('maxTenor')?.touched && plafondForm.get('maxTenor')?.invalid"
+              class="mt-1 text-sm text-red-500"
+            >
+              Max tenor is required.
+            </p>
+          </div>
+
+          <!-- Interest Rate -->
+          <div>
+            <label class="block mb-2 text-sm font-medium text-gray-700">Interest Rate (%)</label>
+
+            <input
+              type="number"
+              step="0.01"
+              formControlName="interestRate"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+
+            <p
+              *ngIf="
+                plafondForm.get('interestRate')?.touched && plafondForm.get('interestRate')?.invalid
+              "
+              class="mt-1 text-sm text-red-500"
+            >
+              Interest rate is required.
+            </p>
+          </div>
+
+          <!-- Admin Fee -->
+          <div>
+            <label class="block mb-2 text-sm font-medium text-gray-700">Admin Fee</label>
+
+            <input
+              type="number"
+              step="0.01"
+              formControlName="adminFee"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+
+            <p
+              *ngIf="plafondForm.get('adminFee')?.touched && plafondForm.get('adminFee')?.invalid"
+              class="mt-1 text-sm text-red-500"
+            >
+              Admin fee is required.
+            </p>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div
+          class="flex justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-xl"
+        >
+          <!-- Cancel -->
+          <button
+            type="button"
+            (click)="closeModal()"
+            [disabled]="submitting()"
+            class="px-5 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-100 disabled:opacity-50"
+          >
+            Cancel
+          </button>
+
+          <!-- Save -->
+          <button
+            type="submit"
+            [disabled]="submitting()"
+            class="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+          >
+            {{
+              submitting() ? 'Saving...' : editingPlafondId !== null ? 'Update Plafond' : 'Save Plafond'
+            }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

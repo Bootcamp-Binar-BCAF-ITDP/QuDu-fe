@@ -47,6 +47,7 @@ export const NAV_ITEMS: NavItem[] = [
       { label: 'Branch', route: '/master/branches' },
       { label: 'Menu', route: '/master/menus' },
       { label: 'User', route: '/master/users' },
+      { label: 'Plafond', route: '/master/plafonds' },
     ],
   },
   { label: 'Bucket', route: '/bucket', icon: [...ICONS.bell] },

@@ -92,6 +92,12 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./pages/master/user/user.component').then((m) => m.UserComponent),
           },
+          {
+            path: 'plafonds',
+            data: { title: 'Plafond' },
+            loadComponent: () =>
+              import('./pages/master/plafond/plafond.component').then((m) => m.PlafondComponent),
+          },
           { path: '', redirectTo: 'roles', pathMatch: 'full' },
         ],
       },
