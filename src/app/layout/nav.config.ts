@@ -41,6 +41,7 @@ export const ICONS = {
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', route: '/dashboard', icon: [...ICONS.grid], menu: 'Dashboard' },
   { label: 'Applications', route: '/applications', icon: [...ICONS.clipboard], menu: 'Applications' },
+  { label: 'Plafond Applications', route: '/plafond-applications', icon: [...ICONS.clipboard], menu: 'Plafond Application' },
   {
     label: 'Master data',
     icon: [...ICONS.layers],

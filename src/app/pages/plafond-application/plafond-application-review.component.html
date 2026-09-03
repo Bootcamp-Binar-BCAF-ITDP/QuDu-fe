@@ -1,0 +1,447 @@
+@if (loading()) {
+  <div class="space-y-5">
+    <div class="h-8 w-72 animate-pulse rounded bg-slate-100"></div>
+    <div class="grid gap-5 lg:grid-cols-3">
+      <div class="space-y-5 lg:col-span-2">
+        <div class="h-56 animate-pulse rounded-xl bg-slate-100"></div>
+        <div class="h-64 animate-pulse rounded-xl bg-slate-100"></div>
+      </div>
+      <div class="space-y-5">
+        <div class="h-72 animate-pulse rounded-xl bg-slate-100"></div>
+        <div class="h-56 animate-pulse rounded-xl bg-slate-100"></div>
+      </div>
+    </div>
+  </div>
+} @else if (error()) {
+  <div class="rounded-xl border border-slate-200 bg-white p-16 text-center">
+    <p class="text-sm font-medium text-slate-900">{{ error() }}</p>
+    <div class="mt-4 flex items-center justify-center gap-2">
+      <button
+        type="button"
+        class="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+        (click)="backToQueue()"
+      >
+        Back to the queue
+      </button>
+      <button
+        type="button"
+        class="cursor-pointer rounded-lg bg-green-800 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-900"
+        (click)="load()"
+      >
+        Retry
+      </button>
+    </div>
+  </div>
+} @else if (request(); as req) {
+  <!-- header -->
+  <header class="mb-5 flex flex-wrap items-start gap-x-4 gap-y-2">
+    <button
+      type="button"
+      class="-ml-2 mt-0.5 cursor-pointer rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700"
+      (click)="back()"
+      aria-label="Back to the queue"
+    >
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+
+    <div class="min-w-0">
+      <div class="flex flex-wrap items-center gap-3">
+        <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
+          Plafond request {{ req.requestId }}
+        </h1>
+        <span
+          class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset"
+          [class]="chip().classes"
+        >
+          {{ chip().label }}
+        </span>
+      </div>
+      <p class="mt-1 text-sm text-slate-500">
+        Requested on {{ req.requestDate | date: 'MMM d, y' }}
+      </p>
+    </div>
+  </header>
+
+  <div class="grid gap-5 pb-8 lg:grid-cols-3">
+    <!-- left column -->
+    <div class="space-y-5 lg:col-span-2">
+      <!-- customer -->
+      <section class="rounded-xl border border-slate-200 bg-white p-6">
+        <h2 class="border-b border-slate-100 pb-4 text-base font-semibold text-green-800">
+          Customer information
+        </h2>
+
+        <div class="mt-5 flex flex-col gap-5 sm:flex-row">
+          <div
+            class="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-green-100 text-lg font-semibold text-green-800"
+            aria-hidden="true"
+          >
+            {{ initials(req.customerName) }}
+          </div>
+
+          <dl class="grid flex-1 gap-x-8 gap-y-4 sm:grid-cols-2">
+            <div>
+              <dt class="text-xs text-slate-500">Full name</dt>
+              <dd class="mt-0.5 text-sm font-medium text-slate-900">
+                {{ req.customerName || '—' }}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-xs text-slate-500">Customer ID</dt>
+              <dd class="mt-0.5 break-all font-mono text-sm text-slate-900">
+                {{ req.customerId || '—' }}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-xs text-slate-500">Current plafond level</dt>
+              <dd class="mt-0.5 text-sm text-slate-900">
+                {{ req.previousLevel == null ? 'No plafond yet' : 'Level ' + req.previousLevel }}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-xs text-slate-500">Requested level</dt>
+              <dd class="mt-0.5 text-sm font-medium text-slate-900">
+                Level {{ req.requestedLevel }}
+                @if (req.requestedPlafond?.description) {
+                  <span class="font-normal text-slate-500">
+                    · {{ req.requestedPlafond?.description }}
+                  </span>
+                }
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <!-- the upgrade -->
+      <section class="rounded-xl border border-slate-200 bg-white p-6">
+        <h2 class="border-b border-slate-100 pb-4 text-base font-semibold text-green-800">
+          Requested upgrade
+        </h2>
+
+        <div class="mt-5 flex flex-wrap items-center gap-4">
+          <div class="rounded-lg border border-slate-200 bg-slate-50/70 px-5 py-4">
+            <p class="text-xs text-slate-500">Current</p>
+            <p class="mt-1 text-lg font-semibold text-slate-500">
+              {{ req.previousLevel == null ? 'None' : 'Level ' + req.previousLevel }}
+            </p>
+          </div>
+
+          <svg
+            class="h-6 w-6 shrink-0 text-slate-400"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+
+          <div class="rounded-lg border-2 border-green-700 bg-green-50/60 px-5 py-4">
+            <p class="text-xs text-green-800/80">Requested</p>
+            <p class="mt-1 text-lg font-semibold text-green-800">Level {{ req.requestedLevel }}</p>
+          </div>
+
+          @if (levelJump(); as jump) {
+            @if (jump > 1) {
+              <span
+                class="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-200"
+              >
+                Jumps {{ jump }} levels at once
+              </span>
+            }
+          }
+        </div>
+
+        <div class="mt-5 grid gap-3 sm:grid-cols-2">
+          <div class="rounded-lg border border-slate-200 bg-slate-50/70 p-4">
+            <p class="text-xs text-slate-500">Requested limit</p>
+            <p class="mt-1 text-lg font-semibold text-slate-900">
+              {{ formatRupiah(req.requestedAmount) }}
+            </p>
+          </div>
+          <div class="rounded-lg border border-slate-200 bg-slate-50/70 p-4">
+            <p class="text-xs text-slate-500">Approved limit</p>
+            <p class="mt-1 text-lg font-semibold text-slate-900">
+              {{ req.approvedAmount == null ? 'Not decided' : formatRupiah(req.approvedAmount) }}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- the tier being asked for -->
+      @if (tier(); as plafond) {
+        <section class="rounded-xl border border-slate-200 bg-white p-6">
+          <h2 class="border-b border-slate-100 pb-4 text-base font-semibold text-green-800">
+            Tier terms — {{ plafond.description }}
+          </h2>
+
+          <dl class="mt-5 grid gap-x-8 gap-y-4 sm:grid-cols-2">
+            <div>
+              <dt class="text-xs text-slate-500">Level</dt>
+              <dd class="mt-0.5 text-sm font-medium text-slate-900">{{ plafond.level }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-slate-500">Limit range</dt>
+              <dd class="mt-0.5 text-sm text-slate-900">
+                {{ formatRupiah(plafond.minimumAmount) }} – {{ formatRupiah(plafond.maxAmount) }}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-xs text-slate-500">Tenor range</dt>
+              <dd class="mt-0.5 text-sm text-slate-900">
+                {{ plafond.minTenor }} – {{ plafond.maxTenor }} months
+              </dd>
+            </div>
+            <div>
+              <dt class="text-xs text-slate-500">Interest rate</dt>
+              <dd class="mt-0.5 text-sm font-medium text-slate-900">
+                {{ formatRate(plafond.interestRate) }}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-xs text-slate-500">Admin fee</dt>
+              <dd class="mt-0.5 text-sm text-slate-900">{{ formatRupiah(plafond.adminFee) }}</dd>
+            </div>
+          </dl>
+        </section>
+      }
+    </div>
+
+    <!-- right column -->
+    <div class="space-y-5">
+      <section class="rounded-xl border-2 border-green-700 bg-white p-6">
+        <h2 class="text-base font-semibold text-green-800">Your action</h2>
+
+        <div class="mt-4">
+          @if (done(); as message) {
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <p class="text-sm font-medium text-green-800">{{ message }}</p>
+              <button
+                type="button"
+                class="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700"
+                (click)="backToQueue()"
+              >
+                Back to the queue
+              </button>
+            </div>
+          } @else if (idleMessage(); as message) {
+            <p class="text-sm text-slate-600">{{ message }}</p>
+          } @else {
+            <label class="text-sm font-medium text-slate-700" for="approved-amount">
+              Approved limit
+              <span class="font-normal text-slate-500"
+                >— leave empty to grant the full request</span
+              >
+            </label>
+
+            <div class="mt-2 flex flex-col gap-3">
+              <div class="relative">
+                <span
+                  class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-slate-400"
+                >
+                  Rp
+                </span>
+                <input
+                  id="approved-amount"
+                  type="number"
+                  min="1"
+                  [max]="req.requestedAmount"
+                  step="1000000"
+                  [ngModel]="approvedAmount()"
+                  (ngModelChange)="
+                    approvedAmount.set($event === null || $event === '' ? null : +$event)
+                  "
+                  [placeholder]="req.requestedAmount"
+                  class="w-full rounded-lg border bg-white py-2.5 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1"
+                  [class]="
+                    amountTooHigh()
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                      : 'border-slate-200 focus:border-green-700 focus:ring-green-700'
+                  "
+                />
+              </div>
+
+              @if (amountTooHigh()) {
+                <p class="text-xs text-red-700">
+                  Cannot be higher than the requested
+                  {{ formatRupiah(req.requestedAmount) }}.
+                </p>
+              } @else if (amountReduced()) {
+                <p class="text-xs text-amber-700">
+                  Approving {{ formatRupiah(effectiveAmount()) }} instead of
+                  {{ formatRupiah(req.requestedAmount) }}. The tier is resolved from the amount, so
+                  the customer may land below level {{ req.requestedLevel }}.
+                </p>
+              }
+
+              <div>
+                <label class="text-sm font-medium text-slate-700" for="plafond-note">
+                  Decision note
+                  <span class="font-normal text-slate-500">— required when you reject</span>
+                </label>
+                <textarea
+                  id="plafond-note"
+                  rows="2"
+                  [ngModel]="notes()"
+                  (ngModelChange)="notes.set($event)"
+                  placeholder="Explain the reasoning behind this decision…"
+                  class="mt-2 w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-green-700 focus:outline-none focus:ring-1 focus:ring-green-700"
+                ></textarea>
+              </div>
+
+              <div class="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  class="cursor-pointer rounded-lg border border-red-300 px-4 py-2.5 text-sm font-medium text-red-700 transition hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+                  [disabled]="busy()"
+                  (click)="reject()"
+                >
+                  Reject
+                </button>
+
+                <button
+                  type="button"
+                  class="cursor-pointer rounded-lg bg-green-800 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-green-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  [disabled]="busy() || amountTooHigh()"
+                  (click)="approve()"
+                >
+                  {{ busy() ? 'Approving…' : 'Approve ' + formatRupiah(effectiveAmount()) }}
+                </button>
+              </div>
+            </div>
+
+            @if (actionError()) {
+              <p class="mt-2 text-sm text-red-700" role="alert">
+                {{ actionError() }}
+              </p>
+            }
+          }
+        </div>
+      </section>
+
+      <!-- timeline -->
+      <section class="rounded-xl border border-slate-200 bg-white p-6">
+        <h2 class="text-base font-semibold text-slate-900">Request timeline</h2>
+
+        <ol class="mt-5">
+          @for (stage of stages(); track stage.key; let last = $last) {
+            <li class="relative flex gap-3 pb-5" [class.pb-0]="last">
+              @if (!last) {
+                <span
+                  class="absolute left-[9px] top-6 h-full w-px bg-slate-200"
+                  aria-hidden="true"
+                ></span>
+              }
+
+              <span class="relative mt-0.5 shrink-0" aria-hidden="true">
+                @switch (stage.state) {
+                  @case ('done') {
+                    <svg class="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.7-9.3a1 1 0 00-1.4-1.4L9 10.6 7.7 9.3a1 1 0 10-1.4 1.4l2 2a1 1 0 001.4 0l4-4z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  }
+                  @case ('failed') {
+                    <svg class="h-5 w-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.7 7.3a1 1 0 00-1.4 1.4L8.6 10l-1.3 1.3a1 1 0 101.4 1.4L10 11.4l1.3 1.3a1 1 0 001.4-1.4L11.4 10l1.3-1.3a1 1 0 00-1.4-1.4L10 8.6 8.7 7.3z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  }
+                  @case ('current') {
+                    <span class="flex h-5 w-5 items-center justify-center">
+                      <span
+                        class="h-2.5 w-2.5 rounded-full bg-amber-500 ring-4 ring-amber-100"
+                      ></span>
+                    </span>
+                  }
+                  @default {
+                    <span class="flex h-5 w-5 items-center justify-center">
+                      <span class="h-2.5 w-2.5 rounded-full bg-slate-200"></span>
+                    </span>
+                  }
+                }
+              </span>
+
+              <div class="min-w-0 flex-1">
+                <p
+                  class="text-sm"
+                  [class]="
+                    stage.state === 'current'
+                      ? 'font-semibold text-green-800'
+                      : stage.state === 'upcoming'
+                        ? 'text-slate-400'
+                        : 'font-medium text-slate-900'
+                  "
+                >
+                  {{ stage.title }}
+                </p>
+
+                @if (stage.state === 'current') {
+                  <p class="text-xs font-medium text-amber-600">Current status</p>
+                } @else if (stage.date) {
+                  <p class="text-xs text-slate-500">
+                    {{ stage.date | date: 'MMM d, y' }}
+                  </p>
+                }
+
+                @if (stage.actor && stage.state !== 'upcoming') {
+                  <p class="text-xs text-slate-500">by {{ stage.actor }}</p>
+                }
+              </div>
+            </li>
+          }
+        </ol>
+      </section>
+
+      <!-- decision on record -->
+      @if (req.status !== 'PENDING') {
+        <section class="rounded-xl border border-slate-200 bg-white p-6">
+          <h2 class="text-base font-semibold text-slate-900">Branch manager decision</h2>
+
+          <span
+            class="mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset"
+            [class]="
+              req.status === 'APPROVED'
+                ? 'bg-green-50 text-green-800 ring-green-200'
+                : 'bg-red-50 text-red-800 ring-red-200'
+            "
+          >
+            {{ req.status }}
+          </span>
+
+          @if (req.status === 'APPROVED') {
+            <p class="mt-3 text-xl font-semibold text-green-800">
+              {{ formatRupiah(req.approvedAmount) }}
+            </p>
+            @if (req.approvedAmount != null && req.approvedAmount < req.requestedAmount) {
+              <p class="text-xs text-slate-500">
+                Reduced from {{ formatRupiah(req.requestedAmount) }}
+              </p>
+            }
+          }
+
+          @if (req.notes) {
+            <p class="mt-3 whitespace-pre-line text-sm text-slate-700">
+              {{ req.notes }}
+            </p>
+          }
+
+          <p class="mt-3 text-xs text-slate-500">
+            {{ req.reviewedBy || 'Unknown' }} ·
+            {{ req.decisionDate | date: 'MMM d, y' }}
+          </p>
+        </section>
+      }
+    </div>
+  </div>
+}

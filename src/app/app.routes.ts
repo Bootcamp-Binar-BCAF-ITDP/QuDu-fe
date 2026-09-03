@@ -67,6 +67,27 @@ export const routes: Routes = [
         ],
       },
       {
+        path: 'plafond-applications',
+        data: { title: 'Plafond Applications' },
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./pages/plafond-application/plafond-application.component').then(
+                (m) => m.PlafondApplicationComponent,
+              ),
+          },
+          {
+            path: ':requestId',
+            data: { title: 'Plafond Request Review' },
+            loadComponent: () =>
+              import('./pages/plafond-application/plafond-application-review.component').then(
+                (m) => m.PlafondApplicationReviewComponent,
+              ),
+          },
+        ],
+      },
+      {
         path: 'master',
         canActivate: [menuGuard],
         data: { title: 'Master Data' },
