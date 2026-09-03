@@ -1,10 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter } from 'rxjs';
 
 import { FOOTER_ITEMS, ICONS, NAV_ITEMS, NavItem } from '../nav.config';
 import { AuthService } from '../../core/services/auth.services';
+import { filterNavItems } from '../../shared/utils/nav-filter.util';
 
 @Component({
   selector: 'app-sidebar',
@@ -16,9 +17,15 @@ export class SidebarComponent {
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
 
-  readonly navItems = NAV_ITEMS;
-  readonly footerItems = FOOTER_ITEMS;
   readonly icons = ICONS;
+
+  // filtered against the logged-in user's menus from the login response
+  readonly navItems = computed(() =>
+    filterNavItems(NAV_ITEMS, (menu) => this.authService.hasMenu(menu)),
+  );
+  readonly footerItems = computed(() =>
+    filterNavItems(FOOTER_ITEMS, (menu) => this.authService.hasMenu(menu)),
+  );
 
   readonly url = signal(this.router.url);
   readonly openGroups = signal<Record<string, boolean>>({});
@@ -57,7 +64,8 @@ export class SidebarComponent {
     const next = { ...this.openGroups() };
     let changed = false;
 
-    for (const item of this.navItems) {
+    // navItems is now a computed(); call it to get the current array
+    for (const item of this.navItems()) {
       if (item.children && this.isGroupActive(item) && !next[item.label]) {
         next[item.label] = true;
         changed = true;

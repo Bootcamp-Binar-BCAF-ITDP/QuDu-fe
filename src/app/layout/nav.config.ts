@@ -3,6 +3,7 @@ export type NavAction = 'logout';
 export interface NavLeaf {
   label: string;
   route: string;
+  menu?: string;
 }
 
 export interface NavItem {
@@ -12,6 +13,7 @@ export interface NavItem {
   children?: NavLeaf[];
   exact?: boolean;
   action?: NavAction;
+  menu?: string;
 }
 
 export const ICONS = {
@@ -37,20 +39,20 @@ export const ICONS = {
 } as const;
 
 export const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', route: '/dashboard', icon: [...ICONS.grid] },
-  { label: 'Applications', route: '/applications', icon: [...ICONS.clipboard] },
+  { label: 'Dashboard', route: '/dashboard', icon: [...ICONS.grid], menu: 'Dashboard' },
+  { label: 'Applications', route: '/applications', icon: [...ICONS.clipboard], menu: 'Applications' },
   {
     label: 'Master data',
     icon: [...ICONS.layers],
     children: [
-      { label: 'Role', route: '/master/roles' },
-      { label: 'Branch', route: '/master/branches' },
-      { label: 'Menu', route: '/master/menus' },
-      { label: 'User', route: '/master/users' },
-      { label: 'Plafond', route: '/master/plafonds' },
+      { label: 'Role', route: '/master/roles', menu: 'Role' },
+      { label: 'Branch', route: '/master/branches', menu: 'Branch' },
+      { label: 'Menu', route: '/master/menus', menu: 'Menu' },
+      { label: 'User', route: '/master/users', menu: 'User' },
+      { label: 'Plafond', route: '/master/plafonds', menu: 'Plafond' },
     ],
   },
-  { label: 'Bucket', route: '/bucket', icon: [...ICONS.bell] },
+  { label: 'Bucket', route: '/bucket', icon: [...ICONS.bell], menu: 'Bucket' },
   // { label: 'Approval history', route: '/approval-history', icon: [...ICONS.history] },
   // { label: 'Reports', route: '/reports', icon: [...ICONS.chart] },
 ];

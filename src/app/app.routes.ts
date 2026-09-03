@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guard/auth.guard';
+import { menuGuard } from './core/guard/menu.guard';
 
 export const routes: Routes = [
   /* Public Routes */
@@ -35,13 +36,14 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
-        canActivate: [authGuard],
+        canActivate: [authGuard, menuGuard],
         loadComponent: () =>
           import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent),
       },
       {
         path: 'applications',
         data: { title: 'Applications History' },
+        canActivate: [menuGuard],
         loadComponent: () =>
           import('./pages/loan-application/loan-application.component').then(
             (m) => m.LoanApplicationComponent,
@@ -66,35 +68,41 @@ export const routes: Routes = [
       },
       {
         path: 'master',
+        canActivate: [menuGuard],
         data: { title: 'Master Data' },
         children: [
           {
             path: 'roles',
             data: { title: 'Role' },
+            // canActivate: [menuGuard],
             loadComponent: () =>
               import('./pages/master/role/role.component').then((m) => m.RoleComponent),
           },
           {
             path: 'branches',
             data: { title: 'Branch' },
+            // canActivate: [menuGuard],
             loadComponent: () =>
               import('./pages/master/branch/branch.component').then((m) => m.BranchComponent),
           },
           {
             path: 'menus',
             data: { title: 'Menu' },
+            // canActivate: [menuGuard],
             loadComponent: () =>
               import('./pages/master/menu/menu.component').then((m) => m.MenuComponent),
           },
           {
             path: 'users',
             data: { title: 'User' },
+            // canActivate: [menuGuard],
             loadComponent: () =>
               import('./pages/master/user/user.component').then((m) => m.UserComponent),
           },
           {
             path: 'plafonds',
             data: { title: 'Plafond' },
+            // canActivate: [menuGuard],
             loadComponent: () =>
               import('./pages/master/plafond/plafond.component').then((m) => m.PlafondComponent),
           },

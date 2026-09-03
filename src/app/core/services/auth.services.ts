@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { catchError, EMPTY, Observable, tap, throwError } from 'rxjs';
 import {
   ForgotPasswordRequest,
@@ -13,6 +13,17 @@ import { ApiResponse } from '../../shared/utils/apiResponse.component';
 import { Role } from '../../models/master/role.models';
 import { Branch } from '../../models/master/branch.models';
 import { Router } from '@angular/router';
+import { Menu } from '../../models/master/menu.models';
+
+interface StoredAuth {
+  token: string;
+  userId: string;
+  username: string;
+  role: string;
+  email: string;
+  fullName: string;
+  menus: Menu[];
+}
 
 @Injectable({
   providedIn: 'root',
@@ -26,6 +37,15 @@ export class AuthService {
 
   private readonly USER_KEY = 'current_user';
 
+  private readonly STORAGE_KEY = 'auth';
+
+  private authState = signal<StoredAuth | null>(this.loadFromStorage());
+
+  private loadFromStorage(): StoredAuth | null {
+    const raw = localStorage.getItem(this.USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }
+
   constructor(
     private readonly http: HttpClient,
     private readonly router: Router,
@@ -37,6 +57,7 @@ export class AuthService {
         if (response.token) {
           localStorage.setItem(this.TOKEN_KEY, response.token);
           localStorage.setItem(this.USER_KEY, JSON.stringify(response));
+          this.authState.set(response as unknown as StoredAuth);
         }
       }),
       catchError((err) => {
@@ -81,11 +102,22 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
+    this.authState.set(null);
     this.router.navigate(['/login']);
   }
 
   user(): any {
     const user = localStorage.getItem(this.USER_KEY);
     return user ? JSON.parse(user) : null;
+  }
+
+  getMenus(): Menu[] {
+    return this.authState()?.menus || [];
+  }
+
+  hasMenu(menuName: string): boolean {
+    return this.getMenus().some(
+      (m) => m.menuName.toLowerCase() === menuName.toLowerCase(),
+    );
   }
 }
