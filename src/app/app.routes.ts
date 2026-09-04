@@ -69,6 +69,7 @@ export const routes: Routes = [
       {
         path: 'plafond-applications',
         data: { title: 'Plafond Applications' },
+        canActivate: [menuGuard],
         children: [
           {
             path: '',

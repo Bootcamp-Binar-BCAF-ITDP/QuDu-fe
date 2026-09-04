@@ -2,7 +2,7 @@ export interface PlafondRequest {
   level: number
   description: string
   minimumAmount: number
-  maximumAmount: number
+  maxAmount: number
   minTenor: number
   maxTenor: number
   interestRate: number
@@ -14,7 +14,7 @@ export interface Plafond {
   level: number
   description: string
   minimumAmount: number
-  maximumAmount: number
+  maxAmount: number
   minTenor: number
   maxTenor: number
   interestRate: number
