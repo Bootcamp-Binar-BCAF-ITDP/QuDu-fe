@@ -17,6 +17,7 @@ import {
   LoanDocumentResponse,
 } from '../../models/loan-application/loan-application.models';
 import { LoanApplicationService } from '../../core/services/loan-application/loan-application.service';
+import { DocumentPreviewModalComponent } from '../../shared/components/document-preview-modal/document-preview-modal.component';
 
 const INDICATIVE_ANNUAL_RATE = 0.12;
 
@@ -48,7 +49,7 @@ export interface TimelineEntry {
 @Component({
   selector: 'app-application-detail-modal',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, DocumentPreviewModalComponent],
   templateUrl: './application-review-modal.component.html',
 })
 export class ApplicationDetailModalComponent implements AfterViewInit, OnDestroy {
@@ -172,10 +173,20 @@ export class ApplicationDetailModalComponent implements AfterViewInit, OnDestroy
     return entries;
   });
 
-  // ---- formatting ----
-  documentUrl(doc: LoanDocumentResponse): string {
-    return this.service.documentUrl(doc);
+  // ---- document preview ----
+
+  /** The document the preview modal is showing, or null when it is closed. */
+  readonly previewDocument = signal<LoanDocumentResponse | null>(null);
+
+  openPreview(doc: LoanDocumentResponse): void {
+    this.previewDocument.set(doc);
   }
+
+  closePreview(): void {
+    this.previewDocument.set(null);
+  }
+
+  // ---- formatting ----
 
   readonly documentTabLabel = (doc: LoanDocumentResponse): string =>
     (doc.documentType ?? '')

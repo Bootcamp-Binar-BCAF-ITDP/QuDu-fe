@@ -34,6 +34,20 @@ export const getProtected = <T>(
   });
 };
 
+/**
+ * A protected GET that returns raw bytes instead of the ApiResponse envelope.
+ *
+ * Needed because a browser will not put an Authorization header on an
+ * `<img src>` or `<iframe src>`, so a JWT-guarded file cannot be pointed at
+ * directly. Fetching it here runs it through the interceptor like any other
+ * call; the caller turns the Blob into an object URL for the element to show.
+ */
+export const getProtectedBlob = (http: HttpClient, url: string): Observable<Blob> => {
+  const context = new HttpContext().set(REQUIRES_AUTH, true);
+
+  return http.get(url, { context, responseType: 'blob' });
+};
+
 export const postProtected = <T>(
   http: HttpClient,
   url: string,

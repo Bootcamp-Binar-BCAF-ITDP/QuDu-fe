@@ -39,17 +39,10 @@ export class BucketService {
     );
   }
 
-  documentUrl(document: LoanDocumentResponse | null | undefined): string {
-    const raw = document?.fileUrl?.trim();
-    if (!raw) return '';
-
-    const normalized = raw.replace(/\\/g, '/');
-    if (/^(https?:)?\/\//i.test(normalized) || normalized.startsWith('data:')) {
-      return normalized;
-    }
-
-    return `${API_ORIGIN}/${normalized.replace(/^\/+/, '')}`;
-  }
+  // documentUrl() lived here and pointed at ${API_ORIGIN}/uploads/... built from
+  // the stored filesystem path. Nothing serves /uploads/** and Spring Security
+  // answers 401 there, so it never resolved. Documents now come from
+  // DocumentPreviewService, which fetches the real endpoint as a Blob.
 
   disbursementBucket(query: {
     page: number;

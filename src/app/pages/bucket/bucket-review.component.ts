@@ -10,6 +10,7 @@ import {
   LoanStatus,
 } from '../../models/loan-application/loan-application.models';
 import { LoanApplicationService } from '../../core/services/loan-application/loan-application.service';
+import { DocumentPreviewModalComponent } from '../../shared/components/document-preview-modal/document-preview-modal.component';
 
 /** Matches RoleName on the server. */
 export type RoleName = 'MARKETING' | 'BRANCH_MANAGER' | 'BACK_OFFICE' | 'ADMIN';
@@ -103,8 +104,6 @@ const MONTHLY_INTEREST_RATE = 0.01;
 
 const HEALTHY_DTI = 0.35;
 
-const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'avif'];
-
 const DOCUMENT_ACRONYMS = new Set(['KTP', 'KK', 'NPWP', 'NIK', 'SIM', 'PBB']);
 
 export type StageState = 'done' | 'current' | 'failed' | 'upcoming';
@@ -144,7 +143,7 @@ interface RiskBand {
 @Component({
   selector: 'app-bucket-review',
   standalone: true,
-  imports: [DatePipe, FormsModule],
+  imports: [DatePipe, FormsModule, DocumentPreviewModalComponent],
   templateUrl: './bucket-review.component.html',
 })
 export class BucketReviewComponent {
@@ -499,6 +498,9 @@ export class BucketReviewComponent {
 
   readonly documents = computed<LoanDocumentResponse[]>(() => this.application()?.documents ?? []);
 
+  /** The document the preview modal is showing, or null when it is closed. */
+  readonly previewDocument = signal<LoanDocumentResponse | null>(null);
+
   readonly verifications = computed(() =>
     [...(this.application()?.verifications ?? [])].sort((a, b) =>
       (b.verificationDate ?? '').localeCompare(a.verificationDate ?? ''),
@@ -573,17 +575,9 @@ export class BucketReviewComponent {
     });
   });
 
-  documentUrl(doc: LoanDocumentResponse): string {
-    return this.service.documentUrl(doc);
-  }
-
   extension(doc: LoanDocumentResponse): string {
     const match = /\.([a-z0-9]+)$/i.exec(doc.fileName ?? '');
     return match ? match[1].toUpperCase() : 'FILE';
-  }
-
-  isImage(doc: LoanDocumentResponse): boolean {
-    return IMAGE_EXTENSIONS.includes(this.extension(doc).toLowerCase());
   }
 
   documentLabel(doc: LoanDocumentResponse): string {
@@ -601,9 +595,19 @@ export class BucketReviewComponent {
     );
   }
 
+  /**
+   * Opens the preview modal.
+   *
+   * This used to window.open the stored file path against the API origin, which
+   * could never have worked: nothing serves /uploads/**, and Spring Security
+   * answers 401 there regardless. The file now comes through a real endpoint.
+   */
   openDocument(doc: LoanDocumentResponse): void {
-    const url = this.documentUrl(doc);
-    if (url) window.open(url, '_blank', 'noopener');
+    this.previewDocument.set(doc);
+  }
+
+  closePreview(): void {
+    this.previewDocument.set(null);
   }
 
   /** 'Nada Sambung Tidak Diangkat' comes back as-is; leave the wording alone. */

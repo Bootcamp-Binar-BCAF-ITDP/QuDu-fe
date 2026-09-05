@@ -190,66 +190,42 @@
                   </p>
                 </div>
 
-                <div class="mt-3 flex h-40 items-center justify-center bg-slate-50 px-4">
-                  @if (isImage(doc)) {
-                    <img
-                      [src]="documentUrl(doc)"
-                      [alt]="documentLabel(doc) + ' for ' + app.applicationId"
-                      class="max-h-40 w-full object-contain py-2"
-                    />
-                  } @else {
-                    <div class="flex flex-col items-center gap-2 text-slate-400">
-                      <svg
-                        class="h-10 w-10"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M8 3h6l4 4v14a1 1 0 01-1 1H8a1 1 0 01-1-1V4a1 1 0 011-1z"
-                        />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 3v5h5" />
-                      </svg>
-                      <span class="text-xs font-medium">{{ extension(doc) }}</span>
-                    </div>
-                  }
-                </div>
+                <button
+                  type="button"
+                  class="mt-3 flex h-40 w-full cursor-pointer items-center justify-center bg-slate-50 px-4 transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-green-700"
+                  [attr.aria-label]="'Preview ' + documentLabel(doc)"
+                  (click)="openDocument(doc)"
+                >
+                  <div class="flex flex-col items-center gap-2 text-slate-400">
+                    <svg
+                      class="h-10 w-10"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M8 3h6l4 4v14a1 1 0 01-1 1H8a1 1 0 01-1-1V4a1 1 0 011-1z"
+                      />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M14 3v5h5" />
+                    </svg>
+                    <span class="text-xs font-medium">{{ extension(doc) }}</span>
+                  </div>
+                </button>
 
                 <div
                   class="flex items-center justify-between gap-3 border-t border-slate-100 px-4 py-2.5"
                 >
                   <button
                     type="button"
-                    class="cursor-pointer text-sm text-slate-600 transition hover:text-green-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700"
+                    class="cursor-pointer text-sm font-medium text-green-800 transition hover:text-green-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700"
                     (click)="openDocument(doc)"
                   >
-                    View
+                    Preview
                   </button>
-
-                  <a
-                    [href]="documentUrl(doc)"
-                    [download]="doc.fileName"
-                    class="rounded-md p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-green-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700"
-                    [attr.aria-label]="'Download ' + doc.fileName"
-                  >
-                    <svg
-                      class="h-5 w-5"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="1.8"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"
-                      />
-                    </svg>
-                  </a>
                 </div>
               </article>
             }
@@ -761,3 +737,9 @@
     </div>
   </div>
 }
+
+<app-document-preview-modal
+  [applicationId]="applicationId()"
+  [document]="previewDocument()"
+  (close)="closePreview()"
+/>
