@@ -6,6 +6,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { distinctUntilChanged, map } from 'rxjs';
 import { AuthService } from '../../core/services/auth.services';
 import { PlafondRequestService } from '../../core/services/plafond-request/plafond-request.services';
+import { DocumentPreviewService } from '../../core/services/document/document-preview.service';
+import { DocumentPreviewModalComponent } from '../../shared/components/document-preview-modal/document-preview-modal.component';
+import { PlafondRequestDocument } from '../../models/plafond-request/plafond-request.models';
 import {
   PlafondDecision,
   PlafondRequestItem,
@@ -47,11 +50,12 @@ export interface Stage {
 @Component({
   selector: 'app-plafond-application-review',
   standalone: true,
-  imports: [DatePipe, FormsModule],
+  imports: [DatePipe, FormsModule, DocumentPreviewModalComponent],
   templateUrl: './plafond-application-review.component.html',
 })
 export class PlafondApplicationReviewComponent {
   private readonly service = inject(PlafondRequestService);
+  private readonly preview = inject(DocumentPreviewService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
@@ -60,6 +64,26 @@ export class PlafondApplicationReviewComponent {
 
   readonly requestId = signal('');
   readonly request = signal<PlafondRequestItem | null>(null);
+
+  /** Paperwork snapshotted when the request was filed. Never empty in practice. */
+  readonly documents = computed<PlafondRequestDocument[]>(() => this.request()?.documents ?? []);
+
+  /** The document the preview modal is showing, or null when it is closed. */
+  readonly previewDocument = signal<PlafondRequestDocument | null>(null);
+
+  readonly previewUrl = computed<string | null>(() => {
+    const doc = this.previewDocument();
+    if (doc?.documentId == null) return null;
+    return this.preview.plafondDocumentUrl(this.requestId(), doc.documentId);
+  });
+
+  openPreview(doc: PlafondRequestDocument): void {
+    this.previewDocument.set(doc);
+  }
+
+  closePreview(): void {
+    this.previewDocument.set(null);
+  }
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);

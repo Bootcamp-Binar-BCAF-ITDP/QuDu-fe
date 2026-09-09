@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { LoanDocumentResponse } from '../../../models/loan-application/loan-application.models';
 import { getProtectedBlob } from '../../../shared/utils/httpUtils.utils';
 
 const API_ORIGIN = 'http://localhost:8080';
@@ -20,32 +19,50 @@ const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic'];
  * opens to marketing, branch manager and back office. A customer token cannot
  * read it, which is why the Android app has no preview.
  */
+/**
+ * The little a preview needs to know about a document, so the modal works for
+ * loan-application and plafond-request paperwork alike without either DTO
+ * having to learn about the other.
+ */
+export interface PreviewableDocument {
+  documentId?: number | null;
+  documentType?: string | null;
+  fileName?: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class DocumentPreviewService {
   private readonly http = inject(HttpClient);
 
-  content(applicationId: string, documentId: number): Observable<Blob> {
-    return getProtectedBlob(
-      this.http,
-      `${API_ORIGIN}/api/loan-applications/${applicationId}/documents/${documentId}/content`,
-    );
+  /** Fetches whatever the caller's URL points at. See the two builders below. */
+  contentAt(url: string): Observable<Blob> {
+    return getProtectedBlob(this.http, url);
   }
 
-  extension(document: LoanDocumentResponse | null | undefined): string {
+  loanDocumentUrl(applicationId: string, documentId: number): string {
+    return `${API_ORIGIN}/api/loan-applications/${applicationId}/documents/${documentId}/content`;
+  }
+
+  /** Branch-manager only; the endpoint sits under /api/bm/**. */
+  plafondDocumentUrl(requestId: string, documentId: number): string {
+    return `${API_ORIGIN}/api/bm/plafond-requests/${requestId}/documents/${documentId}/content`;
+  }
+
+  extension(document: PreviewableDocument | null | undefined): string {
     const match = /\.([a-z0-9]+)$/i.exec(document?.fileName ?? '');
     return match ? match[1].toLowerCase() : '';
   }
 
-  isImage(document: LoanDocumentResponse | null | undefined): boolean {
+  isImage(document: PreviewableDocument | null | undefined): boolean {
     return IMAGE_EXTENSIONS.includes(this.extension(document));
   }
 
-  isPdf(document: LoanDocumentResponse | null | undefined): boolean {
+  isPdf(document: PreviewableDocument | null | undefined): boolean {
     return this.extension(document) === 'pdf';
   }
 
   /** 'SLIP_GAJI' -> 'Slip Gaji'; acronyms such as KTP and KK stay upper case. */
-  label(document: LoanDocumentResponse | null | undefined): string {
+  label(document: PreviewableDocument | null | undefined): string {
     const acronyms = new Set(['KTP', 'KK', 'NPWP', 'ID']);
 
     return (

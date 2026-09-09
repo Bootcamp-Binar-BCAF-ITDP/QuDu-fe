@@ -323,7 +323,7 @@
 </div>
 
 <app-document-preview-modal
-  [applicationId]="application().applicationId"
+  [contentUrl]="previewUrl()"
   [document]="previewDocument()"
   (close)="closePreview()"
 />

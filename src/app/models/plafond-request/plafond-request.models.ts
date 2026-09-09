@@ -42,6 +42,9 @@ export interface PlafondRequestItem {
   notes: string | null;
 
   requestedPlafond: PlafondTier | null;
+
+  /** Snapshot of the customer's paperwork when the request was filed. */
+  documents: PlafondRequestDocument[];
 }
 
 /** PlafondDecisionRequest. approvedAmount defaults to the requested amount. */
@@ -49,4 +52,13 @@ export interface PlafondDecisionBody {
   decision: PlafondDecision;
   approvedAmount?: number;
   notes?: string;
+}
+
+/** One document snapshotted onto a limit-increase request. */
+export interface PlafondRequestDocument {
+  documentId: number;
+  documentType: string;
+  label: string;
+  fileName: string;
+  uploadedAt: string;
 }

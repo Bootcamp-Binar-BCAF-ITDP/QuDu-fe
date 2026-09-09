@@ -10,6 +10,7 @@ import {
   LoanStatus,
 } from '../../models/loan-application/loan-application.models';
 import { LoanApplicationService } from '../../core/services/loan-application/loan-application.service';
+import { DocumentPreviewService } from '../../core/services/document/document-preview.service';
 import { DocumentPreviewModalComponent } from '../../shared/components/document-preview-modal/document-preview-modal.component';
 
 /** Matches RoleName on the server. */
@@ -148,6 +149,7 @@ interface RiskBand {
 })
 export class BucketReviewComponent {
   private readonly service = inject(LoanApplicationService);
+  private readonly preview = inject(DocumentPreviewService);
   private readonly route = inject(ActivatedRoute);
   private readonly location = inject(Location);
   private readonly destroyRef = inject(DestroyRef);
@@ -500,6 +502,13 @@ export class BucketReviewComponent {
 
   /** The document the preview modal is showing, or null when it is closed. */
   readonly previewDocument = signal<LoanDocumentResponse | null>(null);
+
+  /** Where the modal fetches the selected document from. */
+  readonly previewUrl = computed<string | null>(() => {
+    const doc = this.previewDocument();
+    if (doc?.documentId == null) return null;
+    return this.preview.loanDocumentUrl(this.applicationId(), doc.documentId);
+  });
 
   readonly verifications = computed(() =>
     [...(this.application()?.verifications ?? [])].sort((a, b) =>

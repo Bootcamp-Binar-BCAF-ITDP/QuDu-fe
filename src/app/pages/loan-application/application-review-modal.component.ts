@@ -17,6 +17,7 @@ import {
   LoanDocumentResponse,
 } from '../../models/loan-application/loan-application.models';
 import { LoanApplicationService } from '../../core/services/loan-application/loan-application.service';
+import { DocumentPreviewService } from '../../core/services/document/document-preview.service';
 import { DocumentPreviewModalComponent } from '../../shared/components/document-preview-modal/document-preview-modal.component';
 
 const INDICATIVE_ANNUAL_RATE = 0.12;
@@ -54,6 +55,7 @@ export interface TimelineEntry {
 })
 export class ApplicationDetailModalComponent implements AfterViewInit, OnDestroy {
   private readonly service = inject(LoanApplicationService);
+  private readonly preview = inject(DocumentPreviewService);
 
   readonly application = input.required<LoanApplication>();
 
@@ -177,6 +179,13 @@ export class ApplicationDetailModalComponent implements AfterViewInit, OnDestroy
 
   /** The document the preview modal is showing, or null when it is closed. */
   readonly previewDocument = signal<LoanDocumentResponse | null>(null);
+
+  /** Where the modal fetches the selected document from. */
+  readonly previewUrl = computed<string | null>(() => {
+    const doc = this.previewDocument();
+    if (doc?.documentId == null) return null;
+    return this.preview.loanDocumentUrl(this.application().applicationId, doc.documentId);
+  });
 
   openPreview(doc: LoanDocumentResponse): void {
     this.previewDocument.set(doc);

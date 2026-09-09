@@ -3,14 +3,17 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   OnDestroy,
   Output,
   inject,
   signal,
 } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { DocumentPreviewService } from '../../../core/services/document/document-preview.service';
-import { LoanDocumentResponse } from '../../../models/loan-application/loan-application.models';
+import {
+  DocumentPreviewService,
+  PreviewableDocument,
+} from '../../../core/services/document/document-preview.service';
 
 /**
  * Reads a loan document in place, so a reviewer never has to download a KTP
@@ -30,20 +33,18 @@ import { LoanDocumentResponse } from '../../../models/loan-application/loan-appl
   imports: [CommonModule],
   templateUrl: './document-preview-modal.component.html',
 })
-export class DocumentPreviewModalComponent implements OnDestroy {
+export class DocumentPreviewModalComponent implements OnChanges, OnDestroy {
   private readonly service = inject(DocumentPreviewService);
   private readonly sanitizer = inject(DomSanitizer);
 
-  @Input() applicationId: string | null = null;
+  /** Where the bytes live. Built by DocumentPreviewService's URL helpers. */
+  @Input() contentUrl: string | null = null;
 
-  @Input() set document(value: LoanDocumentResponse | null) {
-    this.current.set(value);
-    this.load(value);
-  }
+  @Input() document: PreviewableDocument | null = null;
 
   @Output() close = new EventEmitter<void>();
 
-  readonly current = signal<LoanDocumentResponse | null>(null);
+  readonly current = signal<PreviewableDocument | null>(null);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
@@ -78,17 +79,27 @@ export class DocumentPreviewModalComponent implements OnDestroy {
     this.release();
   }
 
-  private load(document: LoanDocumentResponse | null): void {
+  /**
+   * Loading here rather than from an input setter, because the two inputs are
+   * set in whatever order the template binds them - a setter on `document`
+   * would fire before `contentUrl` had arrived and quietly fetch nothing.
+   */
+  ngOnChanges(): void {
+    this.current.set(this.document);
+    this.load(this.document);
+  }
+
+  private load(document: PreviewableDocument | null): void {
     this.release();
     this.error.set(null);
 
-    if (!document || !this.applicationId || document.documentId == null) {
+    if (!document || !this.contentUrl) {
       return;
     }
 
     this.loading.set(true);
 
-    this.service.content(this.applicationId, document.documentId).subscribe({
+    this.service.contentAt(this.contentUrl).subscribe({
       next: (blob) => {
         const url = URL.createObjectURL(blob);
         this.objectUrl.set(url);
