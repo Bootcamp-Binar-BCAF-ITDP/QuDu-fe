@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
@@ -6,7 +7,7 @@ import { BucketItem } from '../../../models/bucket/bucket.models';
 import { LoanDocumentResponse } from '../../../models/loan-application/loan-application.models';
 import { getProtected } from '../../../shared/utils/httpUtils.utils';
 
-const API_ORIGIN = 'http://localhost:8080';
+const API_ORIGIN = environment.apiOrigin;
 
 @Injectable({ providedIn: 'root' })
 export class BucketService {
@@ -38,11 +39,6 @@ export class BucketService {
       map((res) => res.data),
     );
   }
-
-  // documentUrl() lived here and pointed at ${API_ORIGIN}/uploads/... built from
-  // the stored filesystem path. Nothing serves /uploads/** and Spring Security
-  // answers 401 there, so it never resolved. Documents now come from
-  // DocumentPreviewService, which fetches the real endpoint as a Blob.
 
   disbursementBucket(query: {
     page: number;

@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -15,7 +16,7 @@ import { PageParams, PageResponse } from '../../../models/common/app.models';
   providedIn: 'root',
 })
 export class BranchService {
-  private readonly apiUrl = 'http://localhost:8080/api/branches';
+  private readonly apiUrl = `${environment.apiOrigin}/api/branches`;
 
   constructor(private readonly http: HttpClient) {}
 

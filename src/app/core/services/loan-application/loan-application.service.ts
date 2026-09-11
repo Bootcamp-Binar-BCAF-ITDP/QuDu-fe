@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
@@ -16,7 +17,7 @@ import { PageResponse } from '../../../models/common/app.models';
 import { ApiResponse } from '../../../shared/utils/apiResponse.component';
 import { getProtected, postProtected, putProtected } from '../../../shared/utils/httpUtils.utils';
 
-const API_ORIGIN = 'http://localhost:8080';
+const API_ORIGIN = environment.apiOrigin;
 
 @Injectable({ providedIn: 'root' })
 export class LoanApplicationService {

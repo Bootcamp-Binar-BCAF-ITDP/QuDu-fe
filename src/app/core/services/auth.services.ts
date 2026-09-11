@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { catchError, EMPTY, Observable, tap, throwError } from 'rxjs';
@@ -29,9 +30,9 @@ interface StoredAuth {
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly apiUrl = 'http://localhost:8080/api/auth';
+  private readonly apiUrl = `${environment.apiOrigin}/api/auth`;
 
-  private readonly baseUrl = 'http://localhost:8080/api';
+  private readonly baseUrl = `${environment.apiOrigin}/api`;
 
   private readonly TOKEN_KEY = 'access_token';
 

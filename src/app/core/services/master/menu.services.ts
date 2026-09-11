@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -16,7 +17,7 @@ import {
   providedIn: 'root',
 })
 export class MenuService {
-  private readonly apiUrl = 'http://localhost:8080/api/menus';
+  private readonly apiUrl = `${environment.apiOrigin}/api/menus`;
 
   constructor(private readonly http: HttpClient) {}
 

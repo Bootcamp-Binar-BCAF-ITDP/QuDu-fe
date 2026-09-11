@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
@@ -15,7 +16,7 @@ import { ApiResponse } from '../../../shared/utils/apiResponse.component';
   providedIn: 'root',
 })
 export class PlafondService {
-  private readonly apiUrl = 'http://localhost:8080/api/plafonds';
+  private readonly apiUrl = `${environment.apiOrigin}/api/plafonds`;
 
   constructor(private readonly http: HttpClient) {}
 

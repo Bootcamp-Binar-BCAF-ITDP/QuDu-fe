@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -11,8 +12,8 @@ import { ApiResponse } from '../../../shared/utils/apiResponse.component';
   providedIn: 'root',
 })
 export class UserService {
-  private readonly apiUrl = 'http://localhost:8080/api/users';
-  private readonly registerUrl = 'http://localhost:8080/api/auth/register';
+  private readonly apiUrl = `${environment.apiOrigin}/api/users`;
+  private readonly registerUrl = `${environment.apiOrigin}/api/auth/register`;
 
   constructor(private readonly http: HttpClient) {}
 

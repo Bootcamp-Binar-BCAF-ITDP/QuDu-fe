@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { EMPTY, Observable, expand, first, map } from 'rxjs';
@@ -10,7 +11,7 @@ import { ApiResponse } from '../../../shared/utils/apiResponse.component';
 import { getProtected } from '../../../shared/utils/httpUtils.utils';
 import { REQUIRES_AUTH } from '../../context/auth-context';
 
-const API_ORIGIN = 'http://localhost:8080';
+const API_ORIGIN = environment.apiOrigin;
 
 /** Page size used when walking the bucket to find a single request. */
 const LOOKUP_PAGE_SIZE = 100;

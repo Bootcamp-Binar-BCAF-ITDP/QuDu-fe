@@ -1,9 +1,10 @@
+import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { getProtectedBlob } from '../../../shared/utils/httpUtils.utils';
 
-const API_ORIGIN = 'http://localhost:8080';
+const API_ORIGIN = environment.apiOrigin;
 
 const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic'];
 

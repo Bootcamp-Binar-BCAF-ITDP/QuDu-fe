@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -15,7 +16,7 @@ import {
   providedIn: 'root',
 })
 export class RolesService {
-  private readonly apiUrl = 'http://localhost:8080/api/roles';
+  private readonly apiUrl = `${environment.apiOrigin}/api/roles`;
 
   constructor(private readonly http: HttpClient) {}
 

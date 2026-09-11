@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
@@ -18,7 +19,7 @@ export class DashboardService {
   private readonly http = inject(HttpClient);
 
   /** Align this with however LoanApplicationService builds its base URL. */
-  private readonly baseUrl = 'http://localhost:8080/api/dashboard';
+  private readonly baseUrl = `${environment.apiOrigin}/api/dashboard`;
 
   getDashboard(period: DashboardPeriod): Observable<DashboardResponse> {
     return this.http
