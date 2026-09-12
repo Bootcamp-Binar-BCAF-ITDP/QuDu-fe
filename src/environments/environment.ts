@@ -2,5 +2,5 @@
 export const environment = {
   production: true,
 
-  apiOrigin: 'http://localhost:8080',
+  apiOrigin: 'http://18.142.139.120',
 };
