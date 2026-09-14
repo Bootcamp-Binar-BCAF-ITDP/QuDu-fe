@@ -1,10 +1,20 @@
 <div class="min-h-screen bg-slate-100">
-  <app-sidebar />
+  <app-sidebar [open]="sidebarOpen()" (dismiss)="closeSidebar()" />
 
-  <main class="ml-[280px] flex min-h-screen flex-col">
-    <app-header [title]="pageTitle()" />
+  <!-- Backdrop. Only ever rendered below lg, where the sidebar is a drawer
+       sitting on top of the page rather than beside it. -->
+  @if (sidebarOpen()) {
+    <div
+      class="fixed inset-0 z-30 bg-slate-900/50 lg:hidden"
+      aria-hidden="true"
+      (click)="closeSidebar()"
+    ></div>
+  }
 
-    <section class="flex-1 p-8">
+  <main class="flex min-h-screen flex-col lg:ml-[280px]">
+    <app-header [title]="pageTitle()" (openMenu)="openSidebar()" />
+
+    <section class="flex-1 p-4 sm:p-6 lg:p-8">
       <router-outlet />
     </section>
   </main>

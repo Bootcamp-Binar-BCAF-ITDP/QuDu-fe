@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter } from 'rxjs';
@@ -18,6 +18,10 @@ export class SidebarComponent {
   private readonly authService = inject(AuthService);
 
   readonly icons = ICONS;
+
+  /** Drawer state. Only read below lg; above it the sidebar is always shown. */
+  readonly open = input(false);
+  readonly dismiss = output<void>();
 
   // filtered against the logged-in user's menus from the login response
   readonly navItems = computed(() =>

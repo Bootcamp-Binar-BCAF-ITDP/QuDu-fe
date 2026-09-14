@@ -1,5 +1,7 @@
 <aside
-  class="fixed left-0 top-0 flex h-screen w-[280px] flex-col border-r border-slate-200 bg-white"
+  class="fixed left-0 top-0 z-40 flex h-screen w-[280px] max-w-[85vw] flex-col border-r border-slate-200 bg-white transition-transform duration-200 motion-reduce:transition-none lg:translate-x-0"
+  [class.translate-x-0]="open()"
+  [class.-translate-x-full]="!open()"
 >
   <!-- brand -->
   <div class="flex h-[82px] shrink-0 items-center gap-3 border-b border-slate-200 px-6">
@@ -8,10 +10,24 @@
          art standing next to the real wordmark. -->
     <img src="logo-mark.png" alt="" aria-hidden="true" class="h-11 w-11 shrink-0" />
 
-    <div>
+    <div class="min-w-0">
       <img src="logo-wordmark.png" alt="QuickDuit" class="h-7 w-auto" />
       <p class="mt-1 text-xs text-slate-500">Enterprise Banking</p>
     </div>
+
+    <!-- Closes the drawer. Hidden from lg up, where there is nothing to close. -->
+    <button
+      type="button"
+      (click)="dismiss.emit()"
+      class="ml-auto shrink-0 rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 lg:hidden"
+      aria-label="Close navigation"
+    >
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        @for (d of icons.close; track $index) {
+          <path [attr.d]="d" stroke-linecap="round" stroke-linejoin="round" />
+        }
+      </svg>
+    </button>
   </div>
 
   <!-- nav -->

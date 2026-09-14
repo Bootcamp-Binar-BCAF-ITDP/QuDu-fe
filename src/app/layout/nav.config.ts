@@ -35,6 +35,8 @@ export const ICONS = {
   bell: ['M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9', 'M13.73 21a2 2 0 01-3.46 0'],
   search: ['M11 18a7 7 0 100-14 7 7 0 000 14z', 'M20 20l-3.5-3.5'],
   chevronDown: ['M6 9l6 6 6-6'],
+  menu: ['M4 7h16', 'M4 12h16', 'M4 17h16'],
+  close: ['M6 6l12 12', 'M18 6L6 18'],
   logout: ['M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4', 'M16 17l5-5-5-5', 'M21 12H9'],
 } as const;
 
@@ -59,6 +61,6 @@ export const NAV_ITEMS: NavItem[] = [
 ];
 
 export const FOOTER_ITEMS: NavItem[] = [
-  { label: 'Settings', route: '/settings', icon: [...ICONS.gear] },
+  // { label: 'Settings', route: '/settings', icon: [...ICONS.gear] },
   { label: 'Logout',action: 'logout', icon: [...ICONS.logout] },
 ];

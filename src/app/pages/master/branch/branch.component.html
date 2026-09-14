@@ -1,6 +1,6 @@
-<div class="p-6">
+<div class="p-4 sm:p-6">
   <!-- Header -->
-  <div class="flex justify-between items-center mb-6">
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
     <div>
       <h1 class="text-2xl font-bold text-gray-800">Branch Management</h1>
 
@@ -48,12 +48,12 @@
   />
 
   <!-- ADD / EDIT MODAL -->
-  <div *ngIf="modalOpen()" class="fixed inset-0 z-50 flex items-center justify-center">
+  <div *ngIf="modalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <!-- Overlay -->
     <div class="absolute inset-0 bg-black/50" (click)="closeModal()"></div>
 
     <!-- Modal -->
-    <div class="relative w-full max-w-2xl mx-4 bg-white rounded-xl shadow-xl">
+    <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white shadow-xl">
       <!-- Modal Header -->
       <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
         <div>

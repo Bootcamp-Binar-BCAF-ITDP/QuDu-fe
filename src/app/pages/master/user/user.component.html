@@ -1,6 +1,6 @@
-<div class="p-6">
+<div class="p-4 sm:p-6">
   <!-- Header -->
-  <div class="mb-6 flex items-center justify-between">
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
     <div>
       <h1 class="text-2xl font-bold text-gray-800">User Management</h1>
 
@@ -50,12 +50,12 @@
   <!-- ADD / EDIT USER MODAL -->
   <!-- ========================================================= -->
 
-  <div *ngIf="modalOpen()" class="fixed inset-0 z-50 flex items-center justify-center">
+  <div *ngIf="modalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <!-- Overlay -->
     <div class="absolute inset-0 bg-black/50" (click)="closeModal()"></div>
 
     <!-- Modal -->
-    <div class="relative mx-4 w-full max-w-2xl rounded-xl bg-white shadow-xl">
+    <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white shadow-xl">
       <!-- Header -->
       <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4">
         <div>

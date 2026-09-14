@@ -1,9 +1,26 @@
 <header
-  class="sticky top-0 z-30 flex h-[82px] items-center justify-between gap-6 border-b border-slate-200 bg-white px-8"
+  class="sticky top-0 z-20 flex h-[82px] items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 sm:gap-5 sm:px-6 lg:px-8"
 >
-  <h2 class="truncate text-2xl font-bold tracking-tight text-slate-800">{{ title() }}</h2>
+  <div class="flex min-w-0 items-center gap-3">
+    <button
+      type="button"
+      (click)="openMenu.emit()"
+      class="-ml-1 shrink-0 rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 hover:text-green-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 lg:hidden"
+      aria-label="Open navigation"
+    >
+      <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+        @for (d of icons.menu; track $index) {
+          <path [attr.d]="d" stroke-linecap="round" stroke-linejoin="round" />
+        }
+      </svg>
+    </button>
 
-  <div class="flex items-center gap-5">
+    <h2 class="truncate text-lg font-bold tracking-tight text-slate-800 sm:text-2xl">
+      {{ title() }}
+    </h2>
+  </div>
+
+  <!-- <div class="flex shrink-0 items-center gap-2 sm:gap-5">
     @if (search.enabled()) {
       <div class="relative">
         <span
@@ -24,7 +41,7 @@
           [ngModel]="search.query()"
           (ngModelChange)="search.query.set($event)"
           [placeholder]="search.placeholder()"
-          class="w-[260px] rounded-xl border border-slate-300 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-green-700 focus:bg-white focus:ring-4 focus:ring-green-100"
+          class="w-[150px] rounded-xl border border-slate-300 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-green-700 focus:bg-white focus:ring-4 focus:ring-green-100 sm:w-[200px] lg:w-[260px]"
         />
       </div>
     }
@@ -41,13 +58,13 @@
       </svg>
     </button>
 
-    <div class="h-8 border-l border-slate-200" aria-hidden="true"></div>
+    <div class="hidden h-8 border-l border-slate-200 sm:block" aria-hidden="true"></div>
 
     <div
-      class="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-sm font-semibold text-green-800"
+      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-sm font-semibold text-green-800"
       [title]="userName()"
     >
       {{ userInitial() }}
     </div>
-  </div>
+  </div> -->
 </header>
