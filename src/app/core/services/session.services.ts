@@ -1,6 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
 
-/** Matches RoleName on the server. */
 export type RoleName = 'MARKETING' | 'BRANCH_MANAGER' | 'BACK_OFFICE' | 'ADMIN';
 
 export interface SessionUser {

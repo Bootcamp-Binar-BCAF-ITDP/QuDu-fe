@@ -1,4 +1,3 @@
-/* Mirrors com.delvin.loan.dto.response.dashboard.DashboardResponse. */
 
 export const DASHBOARD_PERIODS = [
   'THIS_MONTH',
@@ -14,7 +13,6 @@ export type TrendDirection = 'UP' | 'DOWN' | 'FLAT';
 
 export interface MetricCard {
   value: number;
-  /** Null when the previous period had nothing to compare against. */
   changePercent: number | null;
   direction: TrendDirection;
 }
@@ -27,9 +25,7 @@ export interface DashboardSummary {
   totalDisbursed: MetricCard;
 }
 
-/** Running totals — every series only ever rises across the period. */
 export interface TimeSeriesPoint {
-  /** e.g. '2026-05-01' */
   date: string;
   all: number;
   approved: number;
@@ -38,7 +34,6 @@ export interface TimeSeriesPoint {
 }
 
 export interface StatusSlice {
-  /** 'pending' | 'approved' | 'rejected' */
   key: string;
   label: string;
   count: number;

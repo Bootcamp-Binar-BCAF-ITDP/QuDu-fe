@@ -30,5 +30,4 @@ export interface BucketItem {
   creditScore?: CreditScore | null;
 }
 
-/** Re-exported so importers of the bucket model need not reach into two files. */
 export type { CreditScore, CreditScoreBand } from '../loan-application/loan-application.models';

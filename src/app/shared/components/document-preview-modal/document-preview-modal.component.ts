@@ -15,18 +15,6 @@ import {
   PreviewableDocument,
 } from '../../../core/services/document/document-preview.service';
 
-/**
- * Reads a loan document in place, so a reviewer never has to download a KTP
- * onto their machine to look at it.
- *
- * The file is pulled as a Blob rather than pointed at directly, because the
- * endpoint is JWT-guarded and a browser puts no Authorization header on an
- * `<img src>`. The Blob becomes an object URL, which is also what the download
- * link uses - so saving a copy costs no second request.
- *
- * Object URLs are revoked on close and on destroy. Without that, every document
- * opened would pin its bytes in memory for the life of the tab.
- */
 @Component({
   selector: 'app-document-preview-modal',
   standalone: true,
@@ -37,7 +25,6 @@ export class DocumentPreviewModalComponent implements OnChanges, OnDestroy {
   private readonly service = inject(DocumentPreviewService);
   private readonly sanitizer = inject(DomSanitizer);
 
-  /** Where the bytes live. Built by DocumentPreviewService's URL helpers. */
   @Input() contentUrl: string | null = null;
 
   @Input() document: PreviewableDocument | null = null;
@@ -48,10 +35,8 @@ export class DocumentPreviewModalComponent implements OnChanges, OnDestroy {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
-  /** Raw object URL, used by <img> and by the download link. */
   readonly objectUrl = signal<string | null>(null);
 
-  /** The same URL, waved past the sanitizer so an <iframe> will take it. */
   readonly frameUrl = signal<SafeResourceUrl | null>(null);
 
   get isImage(): boolean {
@@ -79,11 +64,6 @@ export class DocumentPreviewModalComponent implements OnChanges, OnDestroy {
     this.release();
   }
 
-  /**
-   * Loading here rather than from an input setter, because the two inputs are
-   * set in whatever order the template binds them - a setter on `document`
-   * would fire before `contentUrl` had arrived and quietly fetch nothing.
-   */
   ngOnChanges(): void {
     this.current.set(this.document);
     this.load(this.document);
@@ -107,8 +87,6 @@ export class DocumentPreviewModalComponent implements OnChanges, OnDestroy {
         this.loading.set(false);
       },
       error: () => {
-        // The row can outlive the file - uploads/ is routinely wiped between
-        // dev runs - so this is a normal outcome, not an exceptional one.
         this.error.set('Document could not be loaded. It may no longer be stored on the server.');
         this.loading.set(false);
       },

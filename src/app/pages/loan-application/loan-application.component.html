@@ -1,4 +1,3 @@
-<!-- search -->
 <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
   <div class="relative flex-1 sm:max-w-md">
     <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
@@ -63,57 +62,6 @@
   }
 </div>
 
-<!-- date window -->
-<div class="mb-4 flex flex-wrap items-end gap-3">
-  <div>
-    <label class="mb-1 block text-xs font-medium text-slate-600" for="app-from">
-      Submitted from
-    </label>
-    <input
-      id="app-from"
-      type="date"
-      [ngModel]="fromDate()"
-      (ngModelChange)="fromDate.set($event)"
-      [max]="toDate() || null"
-      class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-700 focus:outline-none focus:ring-1 focus:ring-green-700"
-    />
-  </div>
-
-  <div>
-    <label class="mb-1 block text-xs font-medium text-slate-600" for="app-to">
-      Submitted to
-    </label>
-    <input
-      id="app-to"
-      type="date"
-      [ngModel]="toDate()"
-      (ngModelChange)="toDate.set($event)"
-      [min]="fromDate() || null"
-      class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-700 focus:outline-none focus:ring-1 focus:ring-green-700"
-    />
-  </div>
-
-  <button
-    type="button"
-    (click)="applyDateFilter()"
-    [disabled]="loading() || !!dateError()"
-    class="cursor-pointer rounded-lg bg-green-800 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-  >
-    Apply dates
-  </button>
-
-  @if (hasDateFilter()) {
-    <button
-      type="button"
-      (click)="clearDateFilter()"
-      [disabled]="loading()"
-      class="cursor-pointer rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      Clear dates
-    </button>
-  }
-</div>
-
 @if (dateError()) {
   <p class="mb-3 text-sm text-red-600">{{ dateError() }}</p>
 }
@@ -124,32 +72,86 @@
   <p class="mb-3 text-sm text-amber-700">{{ exportNote() }}</p>
 }
 
-<!-- tabs -->
-<div class="flex flex-wrap gap-2" role="tablist" aria-label="Filter by status">
-  @for (tab of tabs; track tab.key) {
+<div class="flex flex-wrap items-end justify-between gap-3">
+  <div class="flex flex-wrap gap-2" role="tablist" aria-label="Filter by status">
+    @for (tab of tabs; track tab.key) {
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="activeTab().key === tab.key"
+        class="flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2"
+        [class]="
+          activeTab().key === tab.key
+            ? 'border-green-700 bg-green-50 text-green-800'
+            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+        "
+        (click)="selectTab(tab)"
+      >
+        {{ tab.label }}
+        @if (activeTab().key === tab.key && !loading()) {
+          <span class="rounded-full bg-green-700 px-2 py-0.5 text-xs font-semibold text-white">
+            {{ totalElements() }}
+          </span>
+        }
+      </button>
+    }
+  </div>
+
+  <div class="flex flex-wrap items-end gap-3">
+    <div>
+      <label class="mb-1 block text-xs font-medium text-slate-600" for="app-from">
+        Submitted from
+      </label>
+      <input
+        id="app-from"
+        type="date"
+        [ngModel]="fromDate()"
+        (ngModelChange)="fromDate.set($event)"
+        [max]="toDate() || null"
+        class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-700 focus:outline-none focus:ring-1 focus:ring-green-700"
+      />
+    </div>
+
+    <div>
+      <label class="mb-1 block text-xs font-medium text-slate-600" for="app-to">
+        Submitted to
+      </label>
+      <input
+        id="app-to"
+        type="date"
+        [ngModel]="toDate()"
+        (ngModelChange)="toDate.set($event)"
+        [min]="fromDate() || null"
+        class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-700 focus:outline-none focus:ring-1 focus:ring-green-700"
+      />
+    </div>
+
     <button
       type="button"
-      role="tab"
-      [attr.aria-selected]="activeTab().key === tab.key"
-      class="flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2"
-      [class]="
-        activeTab().key === tab.key
-          ? 'border-green-700 bg-green-50 text-green-800'
-          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-      "
-      (click)="selectTab(tab)"
+      (click)="applyDateFilter()"
+      [disabled]="loading() || !!dateError()"
+      class="cursor-pointer rounded-lg bg-green-800 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
     >
-      {{ tab.label }}
-      @if (activeTab().key === tab.key && !loading()) {
-        <span class="rounded-full bg-green-700 px-2 py-0.5 text-xs font-semibold text-white">
-          {{ totalElements() }}
-        </span>
-      }
+      Apply dates
     </button>
-  }
+
+    @if (hasDateFilter()) {
+      <button
+        type="button"
+        (click)="clearDateFilter()"
+        [disabled]="loading()"
+        class="cursor-pointer rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        Clear dates
+      </button>
+    }
+  </div>
 </div>
 
-<!-- table -->
+@if (dateError()) {
+  <p class="mt-2 text-sm text-red-600">{{ dateError() }}</p>
+}
+
 <div class="mt-5 overflow-hidden rounded-xl border border-slate-200 bg-white">
   <div class="overflow-x-auto">
     <table class="w-full min-w-[54rem] text-left">
@@ -307,7 +309,6 @@
     </table>
   </div>
 
-  <!-- footer -->
   <div
     class="flex flex-col gap-3 border-t border-slate-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
   >
@@ -396,7 +397,6 @@
   </div>
 </div>
 
-<!-- detail modal -->
 @if (selected(); as application) {
   <app-application-detail-modal [application]="application" (closed)="closeModal()" />
 }

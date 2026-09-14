@@ -1,5 +1,4 @@
 @if (current()) {
-  <!-- z-60 sits above the application review modal's z-50: this opens on top of it. -->
   <div
     class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 p-4"
     role="dialog"
@@ -7,7 +6,6 @@
     [attr.aria-label]="title"
     (click)="closeModal()"
   >
-    <!-- Stops a click inside the panel from reaching the backdrop handler. -->
     <div
       class="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
       (click)="$event.stopPropagation()"
@@ -57,8 +55,6 @@
       </div>
 
       <footer class="flex items-center justify-end gap-3 border-t border-slate-200 px-6 py-3">
-        <!-- Points at the object URL that is already in memory, so saving a copy
-             costs no second trip to the server. -->
         @if (objectUrl()) {
           <a
             [href]="objectUrl()"

@@ -33,7 +33,6 @@
     </div>
   </div>
 } @else if (request(); as req) {
-  <!-- header -->
   <header class="mb-5 flex flex-wrap items-start gap-x-4 gap-y-2">
     <button
       type="button"
@@ -65,9 +64,7 @@
   </header>
 
   <div class="grid gap-5 pb-8 lg:grid-cols-3">
-    <!-- left column -->
     <div class="space-y-5 lg:col-span-2">
-      <!-- customer -->
       <section class="rounded-xl border border-slate-200 bg-white p-6">
         <h2 class="border-b border-slate-100 pb-4 text-base font-semibold text-green-800">
           Customer information
@@ -115,7 +112,6 @@
         </div>
       </section>
 
-      <!-- the upgrade -->
       <section class="rounded-xl border border-slate-200 bg-white p-6">
         <h2 class="border-b border-slate-100 pb-4 text-base font-semibold text-green-800">
           Requested upgrade
@@ -172,7 +168,6 @@
         </div>
       </section>
 
-      <!-- the tier being asked for -->
       @if (tier(); as plafond) {
         <section class="rounded-xl border border-slate-200 bg-white p-6">
           <h2 class="border-b border-slate-100 pb-4 text-base font-semibold text-green-800">
@@ -211,7 +206,6 @@
       }
     </div>
 
-    <!-- right column -->
     <div class="space-y-5">
       <section class="rounded-xl border-2 border-green-700 bg-white p-6">
         <h2 class="text-base font-semibold text-green-800">Your action</h2>
@@ -323,7 +317,6 @@
         </div>
       </section>
 
-      <!-- timeline -->
       <section class="rounded-xl border border-slate-200 bg-white p-6">
         <h2 class="text-base font-semibold text-slate-900">Request timeline</h2>
 
@@ -403,7 +396,6 @@
         </ol>
       </section>
 
-      <!-- decision on record -->
       @if (req.status !== 'PENDING') {
         <section class="rounded-xl border border-slate-200 bg-white p-6">
           <h2 class="text-base font-semibold text-slate-900">Branch manager decision</h2>
@@ -446,7 +438,6 @@
   </div>
 }
 
-<!-- supporting documents -->
 @if (request(); as req) {
   <section class="mt-5 rounded-xl border border-slate-200 bg-white p-6">
     <h2 class="border-b border-slate-100 pb-4 text-base font-semibold text-green-800">

@@ -43,7 +43,6 @@ interface CardDef {
   key: SummaryKey;
   label: string;
   money: boolean;
-  /** True where a rise is bad news, so the trend colour flips. */
   invertTrend: boolean;
   iconPaths: readonly string[];
   tileClasses: string;
@@ -109,9 +108,7 @@ const COUNT_FORMAT = new Intl.NumberFormat('id-ID');
 export interface CardView {
   key: SummaryKey;
   label: string;
-  /** Formatted for the tile, e.g. "Rp 1,2 M". Not a number. */
   display: string;
-  /** The unformatted figure, which is what an export has to carry. */
   raw: number;
   change: number | null;
   direction: TrendDirection;
@@ -126,7 +123,6 @@ export interface LegendEntry {
   color: string;
 }
 
-/** Built from local date parts so the label never slips a day on a timezone shift. */
 function shortDate(iso: string): string {
   const [year, month, day] = iso.split('-').map(Number);
   if (!year || !month || !day) return iso;
@@ -153,10 +149,6 @@ export class DashboardComponent {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
 
-  /**
-   * A custom window. Both sides are required before it takes effect, matching
-   * the server, which refuses one date alone rather than guessing the other.
-   */
   readonly fromDate = signal('');
   readonly toDate = signal('');
 
@@ -171,7 +163,6 @@ export class DashboardComponent {
     return null;
   });
 
-  // Static — no need to rebuild these on every render.
   readonly lineOptions = lineChartOptions();
   readonly donutOptions = doughnutChartOptions();
 
@@ -205,15 +196,6 @@ export class DashboardComponent {
       });
   }
 
-  /**
-   * One file, three sections, separated by blank rows.
-   *
-   * The dashboard holds three different shapes: five summary figures, a daily
-   * running series, and a status breakdown. Forcing them into one rectangle
-   * would invent columns that mean nothing; three separate downloads would make
-   * the reader stitch them back together. Sections are how a spreadsheet report
-   * normally carries this, and Excel opens them without complaint.
-   */
   exportCsv(): void {
     const data = this.data();
     if (!data) return;
@@ -259,7 +241,6 @@ export class DashboardComponent {
     writeCsvFile(stampedFilename(`dashboard-${slug}`), rows);
   }
 
-  /** Choosing a preset drops the custom window, since the two cannot both apply. */
   changePeriod(period: DashboardPeriod): void {
     if (period === this.period() && !this.customRangeActive()) return;
 
@@ -283,10 +264,6 @@ export class DashboardComponent {
     this.load();
   }
 
-  /**
-   * What the export and the chart heading should call this window. A custom
-   * range has no preset name, so it is described by its own dates.
-   */
   readonly windowLabel = computed(() => {
     if (!this.customRangeActive()) return this.periodLabel(this.period());
     return `${this.fromDate()} to ${this.toDate()}`;
@@ -315,8 +292,6 @@ export class DashboardComponent {
     }
   }
 
-  /* ---- metric cards ---- */
-
   readonly cards = computed<CardView[]>(() => {
     const summary = this.data()?.summary;
     if (!summary) return [];
@@ -340,8 +315,6 @@ export class DashboardComponent {
       };
     });
   });
-
-  /* ---- line chart ---- */
 
   readonly lineData = computed<ChartData<'line'>>(() => {
     const points = this.data()?.applicationsOverTime ?? [];
@@ -382,7 +355,6 @@ export class DashboardComponent {
     };
   });
 
-  /** Rendered as HTML rather than by Chart.js, so it can be styled with Tailwind. */
   readonly lineLegend = computed<LegendEntry[]>(() =>
     this.lineData().datasets.map((dataset) => ({
       label: dataset.label ?? '',
@@ -391,8 +363,6 @@ export class DashboardComponent {
   );
 
   readonly hasSeries = computed(() => (this.data()?.applicationsOverTime.length ?? 0) > 0);
-
-  /* ---- doughnut ---- */
 
   readonly donutData = computed<ChartData<'doughnut'>>(() => {
     const slices = this.data()?.byStatus ?? [];
@@ -412,8 +382,6 @@ export class DashboardComponent {
 
   readonly donutTotal = computed(() => this.data()?.byStatusTotal ?? 0);
 
-  /* ---- formatting ---- */
-
   formatCount(value: number | null | undefined): string {
     return value == null ? '—' : COUNT_FORMAT.format(value);
   }
@@ -422,7 +390,6 @@ export class DashboardComponent {
     return SLICE_COLORS[key] ?? CHART_COLORS.slate;
   }
 
-  /** Rp 12,75 M rather than Rp 12.750.000.000 — the full figure will not fit the card. */
   compactRupiah(value: number | null | undefined): string {
     if (value == null) return '—';
 

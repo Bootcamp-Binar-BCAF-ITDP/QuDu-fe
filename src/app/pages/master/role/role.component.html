@@ -1,5 +1,4 @@
 <div class="p-4 sm:p-6">
-  <!-- Header -->
   <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
     <div>
       <h1 class="text-2xl font-bold text-gray-800">Role Management</h1>
@@ -16,7 +15,6 @@
     </button>
   </div>
 
-  <!-- Search -->
 
 
   <div class="mb-4">
@@ -29,7 +27,6 @@
     />
   </div>
 
-  <!-- Table + Pagination -->
   <app-table
     [columns]="columns"
     [data]="roles()"
@@ -48,19 +45,13 @@
     (sortChange)="onSortChange($event)"
   />
 
-  <!-- ===================================== -->
-  <!-- ADD / EDIT ROLE MODAL -->
-  <!-- ===================================== -->
 
   <div *ngIf="modalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <!-- Overlay -->
     <div class="absolute inset-0 bg-black/50" (click)="closeModal()"></div>
 
-    <!-- Modal -->
     <div
       class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white shadow-xl"
     >
-      <!-- Modal Header -->
       <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
         <div>
           <h2 class="text-xl font-semibold text-gray-800">
@@ -76,7 +67,6 @@
           </p>
         </div>
 
-        <!-- Close -->
         <button
           type="button"
           (click)="closeModal()"
@@ -86,10 +76,8 @@
         </button>
       </div>
 
-      <!-- Form -->
       <form [formGroup]="roleForm" (ngSubmit)="saveRole()">
         <div class="p-6 space-y-6">
-          <!-- Role Name -->
           <div>
             <label class="block mb-2 text-sm font-medium text-gray-700"> Role Name </label>
 
@@ -108,7 +96,6 @@
             </p>
           </div>
 
-          <!-- Description -->
           <div>
             <label class="block mb-2 text-sm font-medium text-gray-700"> Description </label>
 
@@ -127,7 +114,6 @@
             </p>
           </div>
 
-          <!-- Menu Access -->
           <div>
             <div class="flex justify-between items-center mb-3">
               <label class="text-sm font-medium text-gray-700"> Menu Access </label>
@@ -135,7 +121,6 @@
               <span class="text-xs text-gray-500"> Select menus for this role </span>
             </div>
 
-            <!-- Menu List -->
             <div class="border border-gray-200 rounded-lg divide-y divide-gray-200">
               <label
                 *ngFor="let menu of menus()"
@@ -157,7 +142,6 @@
                 </div>
               </label>
 
-              <!-- No menus -->
               <div *ngIf="menus().length === 0" class="px-4 py-6 text-center text-sm text-gray-500">
                 No menus available.
               </div>
@@ -165,11 +149,9 @@
           </div>
         </div>
 
-        <!-- Modal Footer -->
         <div
           class="flex justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-xl"
         >
-          <!-- Cancel -->
           <button
             type="button"
             (click)="closeModal()"
@@ -179,7 +161,6 @@
             Cancel
           </button>
 
-          <!-- Submit -->
           <button
             type="submit"
             [disabled]="submitting()"

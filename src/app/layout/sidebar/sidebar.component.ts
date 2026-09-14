@@ -19,11 +19,9 @@ export class SidebarComponent {
 
   readonly icons = ICONS;
 
-  /** Drawer state. Only read below lg; above it the sidebar is always shown. */
   readonly open = input(false);
   readonly dismiss = output<void>();
 
-  // filtered against the logged-in user's menus from the login response
   readonly navItems = computed(() =>
     filterNavItems(NAV_ITEMS, (menu) => this.authService.hasMenu(menu)),
   );
@@ -68,7 +66,6 @@ export class SidebarComponent {
     const next = { ...this.openGroups() };
     let changed = false;
 
-    // navItems is now a computed(); call it to get the current array
     for (const item of this.navItems()) {
       if (item.children && this.isGroupActive(item) && !next[item.label]) {
         next[item.label] = true;

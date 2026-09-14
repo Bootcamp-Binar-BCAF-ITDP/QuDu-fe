@@ -33,7 +33,6 @@
     </div>
   </div>
 } @else if (application(); as app) {
-  <!-- header -->
   <header class="mb-5 flex flex-wrap items-start gap-x-4 gap-y-2">
     <button
       type="button"
@@ -65,9 +64,7 @@
   </header>
 
   <div class="grid gap-5 pb-8 lg:grid-cols-3">
-    <!-- left column -->
     <div class="space-y-5 lg:col-span-2">
-      <!-- customer -->
       <section class="rounded-xl border border-slate-200 bg-white p-6">
         <h2 class="border-b border-slate-100 pb-4 text-base font-semibold text-green-800">
           Customer information
@@ -116,7 +113,6 @@
         </div>
       </section>
 
-      <!-- loan request -->
       <section class="rounded-xl border border-slate-200 bg-white p-6">
         <h2 class="border-b border-slate-100 pb-4 text-base font-semibold text-green-800">
           Loan request
@@ -171,7 +167,6 @@
         </div>
       </section>
 
-      <!-- documents -->
       <section class="rounded-xl border border-slate-200 bg-white p-6">
         <h2 class="border-b border-slate-100 pb-4 text-base font-semibold text-green-800">
           Uploaded documents
@@ -240,7 +235,6 @@
       </section>
     </div>
 
-    <!-- right column -->
     <div class="space-y-5">
       <section class="rounded-xl border-2 border-green-700 bg-white p-6">
         <h2 class="text-base font-semibold text-green-800">Your action</h2>
@@ -261,7 +255,6 @@
             <p class="text-sm text-slate-600">{{ message }}</p>
           } @else {
             @switch (mode()) {
-              <!-- marketing -->
               @case ('MARKETING_REVIEW') {
                 <label class="text-sm font-medium text-slate-700" for="bucket-note">
                   Review note
@@ -300,7 +293,6 @@
                 </div>
               }
 
-              <!-- branch manager -->
               @case ('BM_DECISION') {
                 <label class="text-sm font-medium text-slate-700" for="bucket-note">
                   Decision note
@@ -339,7 +331,6 @@
                 </div>
               }
 
-              <!-- back office: log the call -->
               @case ('BACK_OFFICE_CALL') {
                 <p class="text-sm font-medium text-slate-700">Log the verification call</p>
 
@@ -382,7 +373,6 @@
                 </p>
               }
 
-              <!-- back office: disburse -->
               @case ('BACK_OFFICE_DISBURSE') {
                 <p class="text-sm font-medium text-slate-700">Disburse this loan</p>
 
@@ -477,7 +467,6 @@
         </div>
       </section>
 
-      <!-- marketing review -->
       <section class="rounded-xl border border-slate-200 bg-white p-6">
         <h2 class="text-base font-semibold text-slate-900">Marketing review</h2>
 
@@ -557,7 +546,6 @@
         </div>
       </section>
 
-      <!-- timeline -->
       <section class="rounded-xl border border-slate-200 bg-white p-6">
         <h2 class="text-base font-semibold text-slate-900">Application timeline</h2>
 
@@ -637,7 +625,6 @@
         </ol>
       </section>
 
-      <!-- decision on record -->
       @if (decision(); as record) {
         <section class="rounded-xl border border-slate-200 bg-white p-6">
           <h2 class="text-base font-semibold text-slate-900">Branch manager decision</h2>
@@ -666,7 +653,6 @@
         </section>
       }
 
-      <!-- verification calls -->
       @if (verifications().length) {
         <section class="rounded-xl border border-slate-200 bg-white p-6">
           <h2 class="text-base font-semibold text-slate-900">Verification calls</h2>
@@ -704,7 +690,6 @@
         </section>
       }
 
-      <!-- disbursement -->
       @if (app.disbursement; as payout) {
         <section class="rounded-xl border border-slate-200 bg-white p-6">
           <h2 class="text-base font-semibold text-slate-900">Disbursement</h2>

@@ -11,6 +11,8 @@ export interface LoginMenu {
 
 export interface LoginResponse {
   token: string;
+  refreshToken: string;
+  expiresIn: number;
   userId: string;
   username: string;
   role: string;

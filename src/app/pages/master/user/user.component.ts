@@ -33,11 +33,9 @@ export class UserComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly searchInput$ = new Subject<string>();
 
-  // Dropdown sources — unpaginated, loaded once.
   roles = signal<Role[]>([]);
   branches = signal<Branch[]>([]);
 
-  // One page of users.
   users = signal<User[]>([]);
   totalElements = signal(0);
 
@@ -47,14 +45,11 @@ export class UserComponent implements OnInit {
 
   editingUserId: string | null = null;
 
-  // SEARCH
   search = '';
 
-  // PAGINATION — 1-based here, converted to the API's zero-based page on request.
   currentPage = 1;
   pageSize = 5;
 
-  // SORTING
   sortBy = 'username';
   sortDir: 'asc' | 'desc' = 'asc';
 
@@ -148,7 +143,6 @@ export class UserComponent implements OnInit {
     this.loadBranches();
   }
 
-  // TABLE EVENT HANDLERS
   onSearch(): void {
     this.searchInput$.next(this.search);
   }
@@ -171,7 +165,6 @@ export class UserComponent implements OnInit {
     this.loadUsers();
   }
 
-  // LOAD USERS
   loadUsers(): void {
     this.loading.set(true);
 
@@ -190,7 +183,6 @@ export class UserComponent implements OnInit {
           this.users.set(page?.content ?? []);
           this.totalElements.set(page?.totalElements ?? 0);
 
-          // Deleting the last row on the last page can strand us past the end.
           const lastPage = Math.max(1, page?.totalPages ?? 1);
 
           if (this.currentPage > lastPage) {
@@ -218,7 +210,6 @@ export class UserComponent implements OnInit {
       });
   }
 
-  // LOAD ROLES (dropdown — unpaginated)
   loadRoles(): void {
     this.roleService.getRoleOptions().subscribe({
       next: (response) => {
@@ -231,7 +222,6 @@ export class UserComponent implements OnInit {
     });
   }
 
-  // LOAD BRANCHES (dropdown — unpaginated)
   loadBranches(): void {
     this.branchService.getAllBranches().subscribe({
       next: (response) => {
@@ -244,7 +234,6 @@ export class UserComponent implements OnInit {
     });
   }
 
-  // ADD USER
   addUser(): void {
     this.editingUserId = null;
 
@@ -258,7 +247,6 @@ export class UserComponent implements OnInit {
       branchId: null,
     });
 
-    // Password required when creating
     const passwordControl = this.userForm.get('password');
 
     passwordControl?.setValidators([Validators.required]);
@@ -268,7 +256,6 @@ export class UserComponent implements OnInit {
     this.modalOpen.set(true);
   }
 
-  // EDIT USER
 
   editUser(user: User): void {
     this.editingUserId = user.userId ?? null;
@@ -283,7 +270,6 @@ export class UserComponent implements OnInit {
       branchId: user.branchId ?? null,
     });
 
-    // Password is optional when editing
     const passwordControl = this.userForm.get('password');
 
     passwordControl?.clearValidators();
@@ -292,7 +278,6 @@ export class UserComponent implements OnInit {
     this.modalOpen.set(true);
   }
 
-  // CLOSE MODAL
 
   closeModal(): void {
     if (this.submitting()) {
@@ -313,7 +298,6 @@ export class UserComponent implements OnInit {
     });
   }
 
-  // SAVE USER
   saveUser(): void {
     if (this.userForm.invalid) {
       this.userForm.markAllAsTouched();
@@ -336,12 +320,10 @@ export class UserComponent implements OnInit {
       branchId: Number(formValue.branchId),
     };
 
-    // Only send password if user entered one
     if (formValue.password) {
       request.password = formValue.password;
     }
 
-    // UPDATE
 
     if (this.editingUserId !== null) {
       this.userService.updateUser(this.editingUserId, request).subscribe({
@@ -357,7 +339,6 @@ export class UserComponent implements OnInit {
             showConfirmButton: false,
           });
 
-          // Stay on the current page — the edited row is still there.
           this.loadUsers();
         },
 
@@ -377,7 +358,6 @@ export class UserComponent implements OnInit {
       return;
     }
 
-    // CREATE
     this.userService.createUser(request).subscribe({
       next: () => {
         this.submitting.set(false);
@@ -409,7 +389,6 @@ export class UserComponent implements OnInit {
     });
   }
 
-  // DELETE USER
 
   deleteUser(user: User): void {
     const userId = user.userId;

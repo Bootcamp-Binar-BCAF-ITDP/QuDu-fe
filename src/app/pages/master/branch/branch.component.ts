@@ -35,14 +35,11 @@ export class BranchComponent implements OnInit {
 
   editingBranchId: number | null = null;
 
-  // Search
   search = '';
 
-  // Pagination
   currentPage = 1;
   pageSize = 5;
 
-  // Sorting
   sortBy = 'branchId';
   sortDir: 'asc' | 'desc' = 'asc';
 
@@ -111,25 +108,21 @@ export class BranchComponent implements OnInit {
     this.loadBranches();
   }
 
-  // Search Handler
   onSearch(): void {
     this.searchInput$.next(this.search);
   }
 
-  // Page Handler
   onPageChange(page: number): void {
     this.currentPage = page;
     this.loadBranches();
   }
 
-  // PAGE SIZE HANDLER
   onPageSizeChange(size: number): void {
     this.pageSize = size;
     this.currentPage = 1;
     this.loadBranches();
   }
 
-  // SORT HANDLER
   onSortChange(event: SortEvent): void {
     this.sortBy = event.sortBy;
     this.sortDir = event.sortDir;
@@ -182,7 +175,6 @@ export class BranchComponent implements OnInit {
       });
   }
 
-  // Open modal for adding branch
   addBranch(): void {
     this.editingBranchId = null;
 
@@ -198,7 +190,6 @@ export class BranchComponent implements OnInit {
     this.modalOpen.set(true);
   }
 
-  // Open modal for editing branch
   editBranch(branch: Branch): void {
     this.editingBranchId = branch.branchId ?? null;
 
@@ -214,7 +205,6 @@ export class BranchComponent implements OnInit {
     this.modalOpen.set(true);
   }
 
-  //Close modal
   closeModal(): void {
     if (this.submitting()) {
       return;
@@ -233,7 +223,6 @@ export class BranchComponent implements OnInit {
     });
   }
 
-  // Save / Update branch
   saveBranch(): void {
     if (this.branchForm.invalid) {
       this.branchForm.markAllAsTouched();
@@ -253,7 +242,6 @@ export class BranchComponent implements OnInit {
       isActive: formValue.isActive ?? true,
     };
 
-    //UPDATE
     if (this.editingBranchId !== null) {
       this.branchService.updateBranch(this.editingBranchId, branch).subscribe({
         next: () => {
@@ -287,7 +275,6 @@ export class BranchComponent implements OnInit {
       return;
     }
 
-    // CREATE
 
     this.branchService.addBranch(branch).subscribe({
       next: () => {
@@ -320,7 +307,6 @@ export class BranchComponent implements OnInit {
     });
   }
 
-  // Delete branch
   deleteBranch(branch: Branch): void {
     const branchId = branch.branchId;
 

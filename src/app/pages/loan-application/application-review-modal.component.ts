@@ -21,7 +21,6 @@ import { DocumentPreviewService } from '../../core/services/document/document-pr
 import { DocumentPreviewModalComponent } from '../../shared/components/document-preview-modal/document-preview-modal.component';
 
 
-/** `callStatus` is free text and often Indonesian, so match on both languages. */
 const FAILED_CALL_MARKERS = [
   'FAIL',
   'GAGAL',
@@ -32,7 +31,6 @@ const FAILED_CALL_MARKERS = [
   'REJECT',
 ];
 
-/** Document type tokens that should stay upper case in tab labels. */
 const DOCUMENT_ACRONYMS = new Set(['KTP', 'KK', 'NPWP', 'NIK', 'SIM', 'PBB']);
 
 export type TimelineTone = 'neutral' | 'positive' | 'negative';
@@ -71,7 +69,6 @@ export class ApplicationDetailModalComponent implements AfterViewInit, OnDestroy
   }
 
   ngAfterViewInit(): void {
-    // `autofocus` does not fire on elements Angular inserts after page load.
     this.closeButton?.nativeElement.focus();
   }
 
@@ -80,11 +77,9 @@ export class ApplicationDetailModalComponent implements AfterViewInit, OnDestroy
     this.previouslyFocused?.focus();
   }
 
-  // ---- derived data ----
 
   readonly documents = computed<LoanDocumentResponse[]>(() => this.application().documents ?? []);
 
-  /** Falls back to the first document, so no effect is needed to preselect a tab. */
   readonly activeDocument = computed<LoanDocumentResponse | null>(() => {
     const docs = this.documents();
     if (!docs.length) return null;
@@ -97,11 +92,6 @@ export class ApplicationDetailModalComponent implements AfterViewInit, OnDestroy
     () => this.activeDocument()?.documentId ?? null,
   );
 
-  /**
-   * Comes from the server, which applies the rate of the plafond tier this
-   * customer actually holds. It used to be recomputed here at a flat 12% a
-   * year for everybody, which understated the instalment for every higher tier.
-   */
   readonly estimatedInstallment = computed<number | null>(
     () => this.application().creditScore?.monthlyInstalment ?? null,
   );
@@ -137,7 +127,6 @@ export class ApplicationDetailModalComponent implements AfterViewInit, OnDestroy
       });
     }
 
-    // The API serialises the branch manager decision under `bmdecision`.
     const decision = app.bmdecision;
     if (decision) {
       const approved = (decision.decision ?? '').toUpperCase() === 'APPROVED';
@@ -179,12 +168,9 @@ export class ApplicationDetailModalComponent implements AfterViewInit, OnDestroy
     return entries;
   });
 
-  // ---- document preview ----
 
-  /** The document the preview modal is showing, or null when it is closed. */
   readonly previewDocument = signal<LoanDocumentResponse | null>(null);
 
-  /** Where the modal fetches the selected document from. */
   readonly previewUrl = computed<string | null>(() => {
     const doc = this.previewDocument();
     if (doc?.documentId == null) return null;
@@ -199,7 +185,6 @@ export class ApplicationDetailModalComponent implements AfterViewInit, OnDestroy
     this.previewDocument.set(null);
   }
 
-  // ---- formatting ----
 
   readonly documentTabLabel = (doc: LoanDocumentResponse): string =>
     (doc.documentType ?? '')

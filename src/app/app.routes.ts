@@ -1,11 +1,12 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guard/auth.guard';
+import { guestGuard } from './core/guard/guest.guard';
 import { menuGuard } from './core/guard/menu.guard';
 
 export const routes: Routes = [
-  /* Public Routes */
   {
     path: 'login',
+    canActivate: [guestGuard],
     loadComponent: () => import('./pages/auth/login/login.component').then((m) => m.LoginComponent),
   },
   {
@@ -28,7 +29,6 @@ export const routes: Routes = [
       ),
   },
 
-  /* Protected Routes */
   {
     path: '',
     canActivate: [authGuard],
@@ -96,35 +96,30 @@ export const routes: Routes = [
           {
             path: 'roles',
             data: { title: 'Role' },
-            // canActivate: [menuGuard],
             loadComponent: () =>
               import('./pages/master/role/role.component').then((m) => m.RoleComponent),
           },
           {
             path: 'branches',
             data: { title: 'Branch' },
-            // canActivate: [menuGuard],
             loadComponent: () =>
               import('./pages/master/branch/branch.component').then((m) => m.BranchComponent),
           },
           {
             path: 'menus',
             data: { title: 'Menu' },
-            // canActivate: [menuGuard],
             loadComponent: () =>
               import('./pages/master/menu/menu.component').then((m) => m.MenuComponent),
           },
           {
             path: 'users',
             data: { title: 'User' },
-            // canActivate: [menuGuard],
             loadComponent: () =>
               import('./pages/master/user/user.component').then((m) => m.UserComponent),
           },
           {
             path: 'plafonds',
             data: { title: 'Plafond' },
-            // canActivate: [menuGuard],
             loadComponent: () =>
               import('./pages/master/plafond/plafond.component').then((m) => m.PlafondComponent),
           },
@@ -135,7 +130,6 @@ export const routes: Routes = [
     ],
   },
 
-  // Not Authorized
   {
     path: 'forbidden',
     data: { title: 'Not authorized' },
@@ -145,7 +139,6 @@ export const routes: Routes = [
       ),
   },
 
-  // Not Found
   {
     path: '**',
     data: { title: 'Page Not Found' },

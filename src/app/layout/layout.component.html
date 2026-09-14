@@ -1,8 +1,6 @@
 <div class="min-h-screen bg-slate-100">
   <app-sidebar [open]="sidebarOpen()" (dismiss)="closeSidebar()" />
 
-  <!-- Backdrop. Only ever rendered below lg, where the sidebar is a drawer
-       sitting on top of the page rather than beside it. -->
   @if (sidebarOpen()) {
     <div
       class="fixed inset-0 z-30 bg-slate-900/50 lg:hidden"

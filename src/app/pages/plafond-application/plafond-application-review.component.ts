@@ -15,10 +15,8 @@ import {
   PlafondRequestStatus,
 } from '../../models/plafond-request/plafond-request.models';
 
-/** Matches RoleName on the server. */
 export type RoleName = 'MARKETING' | 'BRANCH_MANAGER' | 'BACK_OFFICE' | 'ADMIN';
 
-/** The decision endpoint lives under /api/bm, so only this role can act. */
 const DECIDING_ROLE: RoleName = 'BRANCH_MANAGER';
 
 interface Chip {
@@ -65,10 +63,8 @@ export class PlafondApplicationReviewComponent {
   readonly requestId = signal('');
   readonly request = signal<PlafondRequestItem | null>(null);
 
-  /** Paperwork snapshotted when the request was filed. Never empty in practice. */
   readonly documents = computed<PlafondRequestDocument[]>(() => this.request()?.documents ?? []);
 
-  /** The document the preview modal is showing, or null when it is closed. */
   readonly previewDocument = signal<PlafondRequestDocument | null>(null);
 
   readonly previewUrl = computed<string | null>(() => {
@@ -90,10 +86,8 @@ export class PlafondApplicationReviewComponent {
 
   readonly role = computed<RoleName | null>(() => this.auth.user()?.role ?? null);
 
-  // ---- action form state ----
   readonly notes = signal('');
 
-  /** Empty means "approve the full requested amount", which is the server default. */
   readonly approvedAmount = signal<number | null>(null);
 
   readonly busy = signal(false);
@@ -124,7 +118,6 @@ export class PlafondApplicationReviewComponent {
       return;
     }
 
-    // The list hands the row over in navigation state, which spares a lookup.
     const passed = (this.router.getCurrentNavigation()?.extras.state ??
       (history.state as { request?: PlafondRequestItem })) as
       { request?: PlafondRequestItem } | undefined;
@@ -169,11 +162,9 @@ export class PlafondApplicationReviewComponent {
     this.router.navigate(['/plafond-applications']);
   }
 
-  // ---- who may act ----
 
   readonly canDecide = computed(() => {
     const role = this.role();
-    // Role is a secondary guard for anyone typing the URL; the server decides.
     return role == null || role === DECIDING_ROLE;
   });
 
@@ -198,16 +189,13 @@ export class PlafondApplicationReviewComponent {
     return 'Only a branch manager can decide on a plafond upgrade.';
   });
 
-  // ---- the decision ----
 
-  /** What actually gets granted: the typed amount, or the full request. */
   readonly effectiveAmount = computed<number>(() => {
     const typed = this.approvedAmount();
     const requested = this.request()?.requestedAmount ?? 0;
     return typed == null || typed <= 0 ? requested : typed;
   });
 
-  /** Mirrors the server check so the operator sees it before sending. */
   readonly amountTooHigh = computed(() => {
     const typed = this.approvedAmount();
     const requested = this.request()?.requestedAmount;
@@ -215,10 +203,6 @@ export class PlafondApplicationReviewComponent {
     return typed > requested;
   });
 
-  /**
-   * The granted tier is resolved from the amount server-side, so approving less
-   * than requested can land the customer on a lower tier than they asked for.
-   */
   readonly amountReduced = computed(() => {
     const typed = this.approvedAmount();
     const requested = this.request()?.requestedAmount;
@@ -301,7 +285,6 @@ export class PlafondApplicationReviewComponent {
     this.approvedAmount.set(null);
   }
 
-  /** BusinessException statuses, turned into something the operator can act on. */
   private errorMessage(err: unknown): string {
     const error = err as { status?: number; error?: { message?: string } };
 
@@ -325,7 +308,6 @@ export class PlafondApplicationReviewComponent {
     }
   }
 
-  // ---- presentation helpers ----
 
   readonly chip = computed<Chip>(() => {
     const request = this.request();
@@ -397,7 +379,6 @@ export class PlafondApplicationReviewComponent {
     }).format(value);
   }
 
-  /** interestRate arrives as a fraction, e.g. 0.0850 for 8.5%. */
   formatRate(value: number | null | undefined): string {
     if (value == null) return '—';
     return `${(value * 100).toFixed(2).replace(/\.?0+$/, '')}%`;

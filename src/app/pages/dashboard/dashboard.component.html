@@ -12,22 +12,7 @@
     </p>
   </div>
 
-  <button
-    type="button"
-    (click)="exportCsv()"
-    [disabled]="!data() || loading()"
-    class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-  >
-    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12" />
-      <path stroke-linecap="round" stroke-linejoin="round" d="M7 10l5 5 5-5" />
-      <path stroke-linecap="round" stroke-linejoin="round" d="M4 21h16" />
-    </svg>
-    Export CSV
-  </button>
-</header>
-
-<!-- custom date window. Overrides the period select above when applied. -->
+  <!-- custom date window. Overrides the period select above when applied. -->
 <div class="mb-5 flex flex-wrap items-end gap-3">
   <div>
     <label class="mb-1 block text-xs font-medium text-slate-600" for="dashboard-from">From</label>
@@ -83,6 +68,8 @@
 @if (dateError()) {
   <p class="mb-3 text-sm text-red-600">{{ dateError() }}</p>
 }
+</header>
+
 
 @if (loading()) {
   <div class="space-y-5">

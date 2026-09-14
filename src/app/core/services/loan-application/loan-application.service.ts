@@ -100,8 +100,4 @@ export class LoanApplicationService {
     return putProtected<LoanDisbursementRequest>(this.http, `${this.baseUrl}/loan-disbursements`, request).pipe(map((res) => res.data));
   }
 
-  // documentUrl() lived here and pointed at ${API_ORIGIN}/uploads/... built from
-  // the stored filesystem path. Nothing serves /uploads/** and Spring Security
-  // answers 401 there, so it never resolved. Documents now come from
-  // DocumentPreviewService, which fetches the real endpoint as a Blob.
 }

@@ -27,8 +27,6 @@ export class TableComponent {
   @Input() loading = false;
   @Input() emptyMessage = 'No data available';
 
-  // PAGINATION — currentPage is 1-based for display; the parent converts
-  // to the API's zero-based `page` param.
   @Input() showPagination = true;
   @Input() currentPage = 1;
   @Input() totalItems = 0;
@@ -36,7 +34,6 @@ export class TableComponent {
   @Input() pageSizeOptions: number[] = [5, 10, 25, 50];
   @Input() itemLabel = 'items';
 
-  // SORTING
   @Input() sortBy = '';
   @Input() sortDir: 'asc' | 'desc' = 'asc';
 
@@ -50,10 +47,6 @@ export class TableComponent {
     return Math.max(1, Math.ceil(this.totalItems / this.pageSize));
   }
 
-  /**
-   * A sliding window of at most 5 page buttons around the current page,
-   * so 200 pages doesn't render 200 buttons.
-   */
   get visiblePages(): number[] {
     const windowSize = 5;
     const total = this.totalPages;
@@ -125,7 +118,6 @@ export class TableComponent {
     return this.sortDir === 'asc' ? '↑' : '↓';
   }
 
-  /** Supports nested keys like 'branch.branchName'. */
   getValue(row: any, key: string): any {
     return key.split('.').reduce((object, property) => object?.[property], row);
   }

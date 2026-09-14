@@ -29,11 +29,9 @@ export class RoleComponent implements OnInit {
   private readonly searchInput$ = new Subject<string>();
   router = inject(Router);
 
-  // One page of roles.
   roles = signal<Role[]>([]);
   totalElements = signal(0);
 
-  // Every menu, unpaginated — drives the modal's checkbox list.
   menus = signal<Menu[]>([]);
 
   loading = signal(false);
@@ -42,14 +40,11 @@ export class RoleComponent implements OnInit {
 
   editingRoleId: number | null = null;
 
-  // Search
   search = '';
 
-  // Pagination
   currentPage = 1;
   pageSize = 5;
 
-  // Sorting
   sortBy = 'roleId';
   sortDir: 'asc' | 'desc' = 'asc';
 
@@ -100,7 +95,6 @@ export class RoleComponent implements OnInit {
     this.loadMenus();
   }
 
-  // TABLE EVENT HANDLERS
   onSearch(): void {
     this.searchInput$.next(this.search);
   }
@@ -123,7 +117,6 @@ export class RoleComponent implements OnInit {
     this.loadRoles();
   }
 
-  // LOAD ROLES
   loadRoles(): void {
     this.loading.set(true);
 
@@ -176,7 +169,6 @@ export class RoleComponent implements OnInit {
     });
   }
 
-  // ADD ROLE
   addRole(): void {
     this.editingRoleId = null;
 
@@ -189,7 +181,6 @@ export class RoleComponent implements OnInit {
     this.modalOpen.set(true);
   }
 
-  // EDIT ROLE
   editRole(role: Role): void {
     this.editingRoleId = role.roleId;
 
@@ -204,7 +195,6 @@ export class RoleComponent implements OnInit {
     this.modalOpen.set(true);
   }
 
-  // CLOSE MODAL
   closeModal(): void {
     if (this.submitting()) {
       return;
@@ -220,7 +210,6 @@ export class RoleComponent implements OnInit {
     });
   }
 
-  // MENU CHECKBOX
   isMenuSelected(menuId: number): boolean {
     const selected = this.roleForm.get('menuIds')?.value ?? [];
 
@@ -243,7 +232,6 @@ export class RoleComponent implements OnInit {
     }
   }
 
-  // SAVE ROLE
   saveRole(): void {
     if (this.roleForm.invalid) {
       this.roleForm.markAllAsTouched();
@@ -275,7 +263,6 @@ export class RoleComponent implements OnInit {
 
     this.submitting.set(true);
 
-    // UPDATE
     if (this.editingRoleId !== null) {
       this.rolesService.updateRole(this.editingRoleId, request).subscribe({
         next: () => {
@@ -310,7 +297,6 @@ export class RoleComponent implements OnInit {
       return;
     }
 
-    // CREATE
     this.rolesService.addRoles(request).subscribe({
       next: () => {
         this.submitting.set(false);
@@ -343,7 +329,6 @@ export class RoleComponent implements OnInit {
     });
   }
 
-  // DELETE ROLE
 
   deleteRole(role: Role): void {
     const roleId = role.roleId;

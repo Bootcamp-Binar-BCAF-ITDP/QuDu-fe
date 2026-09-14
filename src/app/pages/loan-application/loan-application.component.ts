@@ -20,10 +20,6 @@ import {
 } from '../../shared/utils/csv-export.util';
 import { ApplicationDetailModalComponent } from './application-review-modal.component';
 
-/**
- * A ceiling on one export, not a page size. Large enough to cover a realistic
- * filtered report, small enough that a stray click cannot pull the whole table.
- */
 const MAX_EXPORT_ROWS = 5000;
 
 const EXPORT_HEADERS = [
@@ -113,12 +109,6 @@ export class LoanApplicationComponent implements OnInit {
   readonly exportError = signal<string | null>(null);
   readonly exportNote = signal<string | null>(null);
 
-  /**
-   * What the two date inputs hold. Empty means no bound on that side, which is
-   * why they are plain strings rather than nullable dates: an <input type=date>
-   * gives back '' when cleared, and turning that into null and back adds a
-   * conversion with nothing to gain.
-   */
   readonly fromDate = signal('');
   readonly toDate = signal('');
 
@@ -130,10 +120,8 @@ export class LoanApplicationComponent implements OnInit {
 
   readonly hasDateFilter = computed(() => !!this.fromDate() || !!this.toDate());
 
-  /** What the user is typing. */
   readonly searchInput = signal('');
 
-  /** What was actually sent to the server on the last load. */
   readonly appliedSearch = signal('');
 
   readonly searchDirty = computed(() => this.searchInput().trim() !== this.appliedSearch());
@@ -171,16 +159,6 @@ export class LoanApplicationComponent implements OnInit {
     this.load();
   }
 
-  /**
-   * Exports every application matching the current tab and search, not just the
-   * page on screen. Exporting ten visible rows when the filter matches nine
-   * hundred is the kind of export nobody wants twice.
-   *
-   * The cap exists so a careless click cannot ask the server for the entire
-   * table. When it bites, the file is still produced and the UI says so rather
-   * than quietly handing over a truncated report.
-   */
-  /** Any date change restarts at page one, or you land on a page that no longer exists. */
   applyDateFilter(): void {
     if (this.dateError()) return;
     this.page.set(0);
@@ -293,7 +271,6 @@ export class LoanApplicationComponent implements OnInit {
       });
   }
 
-  // ---- search ----
 
   submitSearch(): void {
     const term = this.searchInput().trim();
@@ -313,7 +290,6 @@ export class LoanApplicationComponent implements OnInit {
     this.load();
   }
 
-  // ---- filters, sorting, paging ----
 
   selectTab(tab: StatusGroup): void {
     if (tab.key === this.activeTab().key) return;
@@ -361,7 +337,6 @@ export class LoanApplicationComponent implements OnInit {
     }
   }
 
-  // ---- modal ----
 
   view(application: LoanApplication): void {
     this.selected.set(application);
@@ -371,7 +346,6 @@ export class LoanApplicationComponent implements OnInit {
     this.selected.set(null);
   }
 
-  // ---- presentation helpers ----
 
   statusStyle(status: LoanStatus): StatusStyle {
     return (

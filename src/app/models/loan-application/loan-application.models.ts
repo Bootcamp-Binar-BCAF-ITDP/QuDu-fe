@@ -84,7 +84,6 @@ export interface CustomerSummary {
 export interface LoanDocumentResponse {
   documentId: number;
   applicationId?: string;
-  /** e.g. 'KTP', 'KK', 'SELFIE', 'SLIP_GAJI', 'BANK_ACCOUNT' */
   documentType: string;
   fileName: string;
   fileUrl: string;
@@ -136,23 +135,12 @@ export interface LoanDisbursementResponse {
   disbursementDate?: string;
 }
 
-/** Matches CreditScoreResponse on the backend. */
 export type CreditScoreBand = 'LOW' | 'MODERATE' | 'HIGH' | 'VERY_HIGH' | 'UNKNOWN';
 
-/**
- * The debt service ratio, computed by the server.
- *
- * Also what the review screens label DTI: instalment over income is the same
- * arithmetic under either name. Nothing here is recomputed in the browser,
- * because the interest rate depends on the plafond tier the customer holds and
- * only the server knows which one that is.
- */
 export interface CreditScore {
   monthlyInstalment: number | null;
-  /** Annual rate as a fraction: 0.12 is 12 percent. Differs per plafond tier. */
   annualInterestRate: number | null;
   monthlyIncome: number | null;
-  /** Percent. Null when it could not be computed, which is not zero. */
   dsr: number | null;
   band: CreditScoreBand;
   unavailableReason: string | null;
@@ -166,7 +154,6 @@ export interface LoanApplication {
   purpose: string;
   income: number;
   status: LoanStatus;
-  /** e.g. '2026-08-22' */
   submissionDate: string;
   bank: string;
   bankAccountNumber: string;
@@ -174,7 +161,6 @@ export interface LoanApplication {
 
   documents: LoanDocumentResponse[] | null;
   review: LoanReviewResponse | null;
-  /** Branch manager decision. The API serialises this key in lower case. */
   bmdecision: LoanDecisionResponse | null;
   verifications: LoanVerificationResponse[] | null;
   disbursement: LoanDisbursementResponse | null;
@@ -205,10 +191,6 @@ export interface LoanApplicationQuery {
   statuses?: LoanStatus[];
   search?: string;
 
-  /**
-   * Inclusive bounds on submissionDate, ISO yyyy-MM-dd. Either may be omitted
-   * for an open-ended window; the server widens the missing side.
-   */
   from?: string;
   to?: string;
 }

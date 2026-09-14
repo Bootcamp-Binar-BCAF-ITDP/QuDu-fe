@@ -14,21 +14,11 @@ import { LoanApplicationService } from '../../core/services/loan-application/loa
 import { DocumentPreviewService } from '../../core/services/document/document-preview.service';
 import { DocumentPreviewModalComponent } from '../../shared/components/document-preview-modal/document-preview-modal.component';
 
-/** Matches RoleName on the server. */
 export type RoleName = 'MARKETING' | 'BRANCH_MANAGER' | 'BACK_OFFICE' | 'ADMIN';
 
 export type ActionMode =
   'MARKETING_REVIEW' | 'BM_DECISION' | 'BACK_OFFICE_CALL' | 'BACK_OFFICE_DISBURSE';
 
-/**
- * getMyBucket already filters by role server-side, so an application's status
- * is enough to know what the person who reached it is meant to do. Role is a
- * secondary guard for anyone who types a URL directly — see ALLOWED_BY_ROLE.
- *
- * Mirrors the status guards in the services: LoanReviewService requires
- * CHECKING, branchManagerDecision requires PENDING_BRANCH_MANAGER,
- * submitVerification requires PENDING_BACK_OFFICE, disburse requires VERIFIED.
- */
 const MODE_BY_STATUS: Partial<Record<LoanStatus, ActionMode>> = {
   CHECKING: 'MARKETING_REVIEW',
   PENDING_BRANCH_MANAGER: 'BM_DECISION',
@@ -42,7 +32,6 @@ const ALLOWED_BY_ROLE: Partial<Record<RoleName, ActionMode[]>> = {
   BACK_OFFICE: ['BACK_OFFICE_CALL', 'BACK_OFFICE_DISBURSE'],
 };
 
-/** Shown to whoever is not holding the application right now. */
 const WAITING_ON: Record<LoanStatus, string> = {
   CHECKING: 'Waiting on marketing to review it.',
   REJECTED_BY_MARKETING: 'Closed. Marketing rejected it.',
@@ -54,10 +43,6 @@ const WAITING_ON: Record<LoanStatus, string> = {
   REJECTED_BY_BACK_OFFICE: 'Closed. The back office rejected it at disbursement.',
 };
 
-/**
- * Must match CallStatus on the server. normalizeCallStatus compares with
- * equalsIgnoreCase, so casing is forgiving but the wording is not.
- */
 export const CALL_STATUSES = [
   'Can be Contacted',
   'Nada Sambung Tidak Diangkat',
@@ -164,11 +149,6 @@ export class BucketReviewComponent {
   readonly currentUserId = signal<string | null>(null);
 
   readonly callStatuses = CALL_STATUSES;
-  /**
-   * The monthly rate actually applied, derived from the annual rate of the
-   * plafond tier this customer holds. It used to be a constant 1% for everyone,
-   * which was simply wrong for every tier that is not 12% a year.
-   */
   readonly monthlyRateLabel = computed(() => {
     const annual = this.creditScore()?.annualInterestRate;
     if (annual == null) return '—';
@@ -177,7 +157,6 @@ export class BucketReviewComponent {
     return `${monthly.toFixed(2).replace(/\.?0+$/, '')}%`;
   });
 
-  // ---- action form state ----
   readonly note = signal('');
   readonly callStatus = signal<CallStatus>('Can be Contacted');
 
@@ -263,7 +242,6 @@ export class BucketReviewComponent {
     return WAITING_ON[app.status] ?? 'This application has no action pending.';
   });
 
-  /** Where the money goes. Recorded on the application, not typed by the operator. */
   readonly payoutAccount = computed(() => {
     const app = this.application();
     if (!app) return null;
@@ -280,7 +258,6 @@ export class BucketReviewComponent {
     return !!account && account.bank.length > 0 && account.accountNumber.length > 0;
   });
 
-  /** Marketing: CHECKING -> PENDING_BRANCH_MANAGER or REJECTED_BY_MARKETING. */
   submitReview(recommendation: 'ACCEPT' | 'REJECT'): void {
     const app = this.application();
     if (!app) return;
@@ -303,7 +280,6 @@ export class BucketReviewComponent {
     );
   }
 
-  /** Branch manager: PENDING_BRANCH_MANAGER -> PENDING_BACK_OFFICE or rejected. */
   submitDecision(approve: boolean): void {
     const app = this.application();
     if (!app) return;
@@ -326,7 +302,6 @@ export class BucketReviewComponent {
     );
   }
 
-  /** Back office: only 'Can be Contacted' moves PENDING_BACK_OFFICE -> VERIFIED. */
   logCall(): void {
     const app = this.application();
     if (!app) return;
@@ -345,7 +320,6 @@ export class BucketReviewComponent {
     );
   }
 
-  /** Back office: VERIFIED -> DISBURSED. */
   disburse(): void {
     const app = this.application();
     if (!app) return;
@@ -416,7 +390,6 @@ export class BucketReviewComponent {
     this.note.set('');
   }
 
-  /** BusinessException statuses, turned into something the operator can act on. */
   private errorMessage(err: unknown): string {
     const error = err as { status?: number; error?: { message?: string } };
 
@@ -458,7 +431,6 @@ export class BucketReviewComponent {
     return pct == null ? 0 : Math.min(100, pct);
   });
 
-  /** Why the ratio is missing, when the server could not compute one. */
   readonly dtiUnavailableReason = computed<string | null>(
     () => this.creditScore()?.unavailableReason ?? null,
   );
@@ -511,10 +483,8 @@ export class BucketReviewComponent {
 
   readonly documents = computed<LoanDocumentResponse[]>(() => this.application()?.documents ?? []);
 
-  /** The document the preview modal is showing, or null when it is closed. */
   readonly previewDocument = signal<LoanDocumentResponse | null>(null);
 
-  /** Where the modal fetches the selected document from. */
   readonly previewUrl = computed<string | null>(() => {
     const doc = this.previewDocument();
     if (doc?.documentId == null) return null;
@@ -615,13 +585,6 @@ export class BucketReviewComponent {
     );
   }
 
-  /**
-   * Opens the preview modal.
-   *
-   * This used to window.open the stored file path against the API origin, which
-   * could never have worked: nothing serves /uploads/**, and Spring Security
-   * answers 401 there regardless. The file now comes through a real endpoint.
-   */
   openDocument(doc: LoanDocumentResponse): void {
     this.previewDocument.set(doc);
   }
@@ -630,7 +593,6 @@ export class BucketReviewComponent {
     this.previewDocument.set(null);
   }
 
-  /** 'Nada Sambung Tidak Diangkat' comes back as-is; leave the wording alone. */
   callStatusClasses(callStatus: string | null | undefined): string {
     return (callStatus ?? '').toLowerCase().includes('can be contacted')
       ? 'bg-green-50 text-green-800 ring-green-200'

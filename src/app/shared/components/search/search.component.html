@@ -1,7 +1,5 @@
-<!-- search -->
 <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
   <div class="relative flex-1 sm:max-w-md">
-    <!-- Search Icon -->
     <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
       <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path
@@ -15,7 +13,6 @@
 
     <label class="sr-only" [for]="inputId()">{{ label() }}</label>
 
-    <!-- Input -->
     <input
       [id]="inputId()"
       type="search"
@@ -26,7 +23,6 @@
       class="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-9 pr-9 text-sm text-slate-900 placeholder:text-slate-400 focus:border-green-700 focus:outline-none focus:ring-1 focus:ring-green-700"
     />
 
-    <!-- Clear Button -->
     @if (searchInput()) {
       <button
         type="button"
@@ -41,7 +37,6 @@
     }
   </div>
 
-  <!-- Submit Button -->
   <button
     type="button"
     (click)="submitSearch()"
@@ -73,7 +68,6 @@
     {{ buttonText() }}
   </button>
 
-  <!-- Search Result Indicator -->
   @if (appliedSearch()) {
     <p class="text-sm text-slate-500 sm:ml-1">Showing results for “{{ appliedSearch() }}”</p>
   }

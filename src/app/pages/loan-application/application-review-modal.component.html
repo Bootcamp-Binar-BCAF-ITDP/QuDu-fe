@@ -8,7 +8,6 @@
     aria-modal="true"
     [attr.aria-label]="'Application ' + application().applicationId"
   >
-    <!-- header -->
     <header class="flex items-center gap-3 border-b border-slate-200 bg-white px-6 py-4">
       <button
         #closeButton
@@ -36,9 +35,7 @@
 
     <div class="max-h-[calc(92vh-4rem)] space-y-5 overflow-y-auto p-5 sm:p-6">
       <div class="grid gap-5 lg:grid-cols-3">
-        <!-- left column -->
         <div class="space-y-5 lg:col-span-2">
-          <!-- applicant profile -->
           <section class="rounded-xl border border-slate-200 bg-white p-6">
             <h3 class="text-lg font-semibold tracking-tight text-slate-900">Applicant profile</h3>
 
@@ -85,12 +82,10 @@
             </div>
           </section>
 
-          <!-- loan data -->
           <section class="rounded-xl border border-slate-200 bg-white p-6">
             <h3 class="text-lg font-semibold tracking-tight text-slate-900">Loan data</h3>
 
             <div class="mt-5 grid gap-4 sm:grid-cols-2">
-              <!-- requested loan -->
               <div class="rounded-lg border border-slate-200 bg-slate-50/70 p-4">
                 <p class="flex items-center gap-2 text-sm font-semibold text-green-800">
                   <svg
@@ -143,7 +138,6 @@
                 </dl>
               </div>
 
-              <!-- stated income -->
               <div class="rounded-lg border border-slate-200 bg-slate-50/70 p-4">
                 <p class="flex items-center gap-2 text-sm font-semibold text-green-800">
                   <svg
@@ -175,14 +169,12 @@
             </p>
           </section>
 
-          <!-- history -->
           <section class="rounded-xl border border-slate-200 bg-white p-6">
             <h3 class="text-lg font-semibold tracking-tight text-slate-900">Application history</h3>
 
             <ol class="mt-5 space-y-0">
               @for (entry of timeline(); track entry.key; let last = $last) {
                 <li class="relative flex gap-4 pb-6" [class.pb-0]="last">
-                  <!-- rail -->
                   @if (!last) {
                     <span
                       class="absolute left-[7px] top-5 h-full w-px bg-slate-200"
@@ -224,9 +216,7 @@
           </section>
         </div>
 
-        <!-- right column -->
         <div class="space-y-5">
-          <!-- documents -->
           <section class="rounded-xl border border-slate-200 bg-white p-6">
             <h3 class="text-lg font-semibold tracking-tight text-slate-900">Documents</h3>
 
@@ -299,7 +289,6 @@
             }
           </section>
 
-          <!-- marketing notes (read-only) -->
           <section class="rounded-xl border border-slate-200 bg-white p-6">
             <h3 class="text-lg font-semibold tracking-tight text-slate-900">Marketing notes</h3>
 

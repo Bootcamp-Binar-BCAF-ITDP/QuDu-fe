@@ -45,14 +45,8 @@ const STATUS_STYLES: Record<LoanStatus, Chip> = {
 
 const PAGE_SIZES = [5, 10, 25, 50];
 
-/** Matches RoleName on the server. */
 export type RoleName = 'MARKETING' | 'BRANCH_MANAGER' | 'BACK_OFFICE' | 'ADMIN';
 
-/**
- * Back office works two queues, because an application changes status between
- * them: PENDING_BACK_OFFICE while the calls are happening, then VERIFIED once
- * one connects. Every other role has a single queue, so the strip is hidden.
- */
 export type BucketTab = 'VERIFICATION' | 'DISBURSEMENT';
 
 interface TabDef {
@@ -91,17 +85,8 @@ export class BucketComponent implements OnInit {
   readonly pageSizes = PAGE_SIZES;
   readonly tabs = BACK_OFFICE_TABS;
 
-  /**
-   * TODO wire to your auth service, e.g.
-   *   private readonly auth = inject(AuthService);
-   *   readonly role = computed(() => this.auth.user()?.role ?? null);
-   *
-   * While it is null the strip stays hidden and the page behaves exactly as it
-   * did before, so nothing breaks until you connect it.
-   */
 
   readonly role = computed(() => this.auth.user()?.role ?? null);
-  // readonly role = signal<RoleName | null>(null);
 
   readonly showTabs = computed(() => this.role() === 'BACK_OFFICE');
 
@@ -121,10 +106,8 @@ export class BucketComponent implements OnInit {
   readonly first = signal(true);
   readonly last = signal(true);
 
-  /** What the user is typing. */
   readonly searchInput = signal('');
 
-  /** What was actually sent to the server on the last load. */
   readonly appliedSearch = signal('');
 
   readonly rangeStart = computed(() =>
@@ -168,8 +151,6 @@ export class BucketComponent implements OnInit {
       search: this.appliedSearch(),
     };
 
-    // Disbursement is a separate endpoint because the bucket endpoint only
-    // returns PENDING_BACK_OFFICE — VERIFIED rows drop out of it entirely.
     const source =
       this.showTabs() && this.activeTab() === 'DISBURSEMENT'
         ? this.service.disbursementBucket(query)
@@ -196,7 +177,6 @@ export class BucketComponent implements OnInit {
     });
   }
 
-  // ---- search ----
 
   submitSearch(): void {
     const term = this.searchInput().trim();
@@ -216,7 +196,6 @@ export class BucketComponent implements OnInit {
     this.load();
   }
 
-  // ---- queue ----
 
   selectTab(tab: BucketTab): void {
     if (tab === this.activeTab()) return;
@@ -233,7 +212,6 @@ export class BucketComponent implements OnInit {
     return active?.empty ?? 'Your queue is empty. Nothing to review.';
   });
 
-  // ---- sorting, paging ----
 
   toggleSort(field: BucketSortField): void {
     if (this.sortBy() === field) {
@@ -274,12 +252,10 @@ export class BucketComponent implements OnInit {
     }
   }
 
-  // ---- navigation ----
   open(item: BucketItem): void {
     this.router.navigate(['/bucket', item.applicationId]);
   }
 
-  // ---- presentation helpers ----
   statusStyle(status: LoanStatus): Chip {
     return (
       STATUS_STYLES[status] ?? {
@@ -301,11 +277,6 @@ export class BucketComponent implements OnInit {
     return { label: 'Recommended', classes: 'text-green-700', tone: 'positive' };
   }
 
-  /**
-   * Colour follows the band the server assigned, never a threshold decided
-   * here. Where the cut-offs sit is a lending policy question, and duplicating
-   * them in the browser is how two screens end up disagreeing.
-   */
   creditScoreClass(score: CreditScore | null | undefined): string {
     switch (score?.band) {
       case 'LOW':
@@ -321,7 +292,6 @@ export class BucketComponent implements OnInit {
     }
   }
 
-  /** Whole percent, because the circle is 44px wide. Detail goes in the tooltip. */
   creditScoreLabel(score: CreditScore | null | undefined): string {
     return score?.dsr == null ? '—' : `${Math.round(score.dsr)}%`;
   }

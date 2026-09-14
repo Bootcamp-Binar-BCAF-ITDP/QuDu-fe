@@ -56,11 +56,8 @@ export const NAV_ITEMS: NavItem[] = [
     ],
   },
   { label: 'Bucket', route: '/bucket', icon: [...ICONS.bell], menu: 'Bucket' },
-  // { label: 'Approval history', route: '/approval-history', icon: [...ICONS.history] },
-  // { label: 'Reports', route: '/reports', icon: [...ICONS.chart] },
 ];
 
 export const FOOTER_ITEMS: NavItem[] = [
-  // { label: 'Settings', route: '/settings', icon: [...ICONS.gear] },
   { label: 'Logout',action: 'logout', icon: [...ICONS.logout] },
 ];

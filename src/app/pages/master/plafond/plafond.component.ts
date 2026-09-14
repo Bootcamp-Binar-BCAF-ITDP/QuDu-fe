@@ -33,14 +33,11 @@ export class PlafondComponent implements OnInit {
 
   editingPlafondId: number | null = null;
 
-  // Search
   search = '';
 
-  // Pagination
   currentPage = 1;
   pageSize = 5;
 
-  // Sorting
   sortBy = 'plafondId';
   sortDir: 'asc' | 'desc' = 'asc';
 
@@ -130,25 +127,21 @@ export class PlafondComponent implements OnInit {
     this.loadPlafonds();
   }
 
-  // SEARCH HANDLER
   onSearch(): void {
     this.searchInput$.next(this.search);
   }
 
-  // PAGE HANDLER
   onPageChange(page: number): void {
     this.currentPage = page;
     this.loadPlafonds();
   }
 
-  // PAGE SIZE HANDLER
   onPageSizeChange(size: number): void {
     this.pageSize = size;
     this.currentPage = 1;
     this.loadPlafonds();
   }
 
-  // SORT HANDLER
   onSortChange(event: SortEvent): void {
     this.sortBy = event.sortBy;
     this.sortDir = event.sortDir;
@@ -275,7 +268,6 @@ export class PlafondComponent implements OnInit {
       adminFee: Number(formValue.adminFee ?? 0),
     };
 
-    // UPDATE
     if (this.editingPlafondId !== null) {
       this.plafondService.updatePlafond(this.editingPlafondId, request).subscribe({
         next: () => {
@@ -290,7 +282,6 @@ export class PlafondComponent implements OnInit {
             showConfirmButton: false,
           });
 
-          // Stay on the current page — the edited row is still there.
           this.loadPlafonds();
         },
 
@@ -310,7 +301,6 @@ export class PlafondComponent implements OnInit {
       return;
     }
 
-    // CREATE
     this.plafondService.addPlafond(request).subscribe({
       next: () => {
         this.submitting.set(false);
@@ -324,7 +314,6 @@ export class PlafondComponent implements OnInit {
           showConfirmButton: false,
         });
 
-        // Back to page 1 so the new record is visible.
         this.currentPage = 1;
         this.loadPlafonds();
       },

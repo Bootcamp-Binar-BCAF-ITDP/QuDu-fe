@@ -22,10 +22,6 @@ export class LayoutComponent {
 
   readonly pageTitle = signal(DEFAULT_TITLE);
 
-  /**
-   * Only meaningful below lg, where the sidebar is an overlay drawer. From lg
-   * up the sidebar is always on screen and this flag is ignored by the CSS.
-   */
   readonly sidebarOpen = signal(false);
 
   constructor() {
@@ -38,8 +34,6 @@ export class LayoutComponent {
         this.pageTitle.set(this.resolveTitle());
         this.search.reset();
 
-        // Without this, tapping a link on a phone navigates behind a drawer
-        // that stays open over the page you just asked for.
         this.sidebarOpen.set(false);
       });
 

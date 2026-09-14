@@ -4,7 +4,7 @@ import { Injectable, signal } from '@angular/core';
 export class LayoutSearchService {
   readonly query = signal('');
   readonly placeholder = signal('Search…');
-  
+
   readonly enabled = signal(true);
 
   configure(placeholder: string): void {

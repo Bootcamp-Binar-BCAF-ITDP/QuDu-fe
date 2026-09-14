@@ -7,14 +7,12 @@
       class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
       (click)="$event.stopPropagation()"
     >
-      <!-- Icon -->
       <div
         class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-xl text-red-600"
       >
         🗑
       </div>
 
-      <!-- Content -->
       <h2 class="mt-4 text-xl font-bold text-slate-800">
         {{ title }}
       </h2>
@@ -33,7 +31,6 @@
 
       <p class="mt-4 text-sm text-red-600">This action cannot be undone.</p>
 
-      <!-- Buttons -->
       <div class="mt-6 flex justify-end gap-3">
         <button
           type="button"

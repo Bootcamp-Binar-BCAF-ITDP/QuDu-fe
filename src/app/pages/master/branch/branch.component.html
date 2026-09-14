@@ -1,5 +1,4 @@
 <div class="p-4 sm:p-6">
-  <!-- Header -->
   <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
     <div>
       <h1 class="text-2xl font-bold text-gray-800">Branch Management</h1>
@@ -7,7 +6,6 @@
       <p class="text-sm text-gray-500 mt-1">Manage your branch data</p>
     </div>
 
-    <!-- Add Branch -->
     <button
       type="button"
       (click)="addBranch()"
@@ -17,7 +15,6 @@
     </button>
   </div>
 
-  <!-- Search -->
   <div class="mb-4">
     <input
       type="text"
@@ -28,7 +25,6 @@
     />
   </div>
 
-  <!-- Table + Pagination -->
   <app-table
     [columns]="columns"
     [data]="branches()"
@@ -47,14 +43,10 @@
     (sortChange)="onSortChange($event)"
   />
 
-  <!-- ADD / EDIT MODAL -->
   <div *ngIf="modalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <!-- Overlay -->
     <div class="absolute inset-0 bg-black/50" (click)="closeModal()"></div>
 
-    <!-- Modal -->
     <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white shadow-xl">
-      <!-- Modal Header -->
       <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
         <div>
           <h2 class="text-xl font-semibold text-gray-800">
@@ -66,7 +58,6 @@
           </p>
         </div>
 
-        <!-- Close -->
         <button
           type="button"
           (click)="closeModal()"
@@ -76,10 +67,8 @@
         </button>
       </div>
 
-      <!-- Modal Body -->
       <form [formGroup]="branchForm" (ngSubmit)="saveBranch()">
         <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-          <!-- Branch Code -->
           <div>
             <label class="block mb-2 text-sm font-medium text-gray-700"> Branch Code </label>
 
@@ -97,7 +86,6 @@
             </p>
           </div>
 
-          <!-- Branch Name -->
           <div>
             <label class="block mb-2 text-sm font-medium text-gray-700"> Branch Name </label>
 
@@ -115,7 +103,6 @@
             </p>
           </div>
 
-          <!-- Location -->
           <div>
             <label class="block mb-2 text-sm font-medium text-gray-700"> Location </label>
 
@@ -126,7 +113,6 @@
             />
           </div>
 
-          <!-- Email -->
           <div>
             <label class="block mb-2 text-sm font-medium text-gray-700"> Email </label>
 
@@ -144,7 +130,6 @@
             </p>
           </div>
 
-          <!-- Phone Number -->
           <div>
             <label class="block mb-2 text-sm font-medium text-gray-700"> Phone Number </label>
 
@@ -155,7 +140,6 @@
             />
           </div>
 
-          <!-- Active -->
           <div class="flex items-center gap-2 md:mt-8">
             <input
               id="isActive"
@@ -168,11 +152,9 @@
           </div>
         </div>
 
-        <!-- Modal Footer -->
         <div
           class="flex justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-xl"
         >
-          <!-- Cancel -->
           <button
             type="button"
             (click)="closeModal()"
@@ -182,7 +164,6 @@
             Cancel
           </button>
 
-          <!-- Save -->
           <button
             type="submit"
             [disabled]="submitting()"

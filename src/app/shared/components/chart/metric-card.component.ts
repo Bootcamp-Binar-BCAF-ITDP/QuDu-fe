@@ -73,19 +73,13 @@ export type TrendDirection = 'UP' | 'DOWN' | 'FLAT';
 })
 export class MetricCardComponent {
   readonly label = input.required<string>();
-  /** Pre-formatted — the card does not know whether this is money or a count. */
   readonly value = input.required<string>();
 
-  /** Percentage change. Null hides the trend row and shows `emptyCaption` instead. */
   readonly change = input<number | null>(null);
   readonly direction = input<TrendDirection>('FLAT');
   readonly caption = input<string | null>('vs last period');
   readonly emptyCaption = input('No figures for the previous period');
 
-  /**
-   * For metrics where rising is bad (rejections, defaults, complaints): swaps
-   * the red and green so the colour still means "good" or "bad".
-   */
   readonly invertTrend = input(false);
 
   readonly iconPaths = input<string[]>([]);
@@ -106,7 +100,6 @@ export class MetricCardComponent {
   });
 }
 
-/** Shared icon paths, so pages do not each hand-roll their own. */
 export const METRIC_ICONS = {
   document: ['M8 3h6l4 4v14a1 1 0 01-1 1H8a1 1 0 01-1-1V4a1 1 0 011-1z', 'M14 3v5h5'],
   clock: ['M12 21a9 9 0 100-18 9 9 0 000 18z', 'M12 7.5V12l3 2'],

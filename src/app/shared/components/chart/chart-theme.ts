@@ -1,6 +1,5 @@
 import { ChartOptions, ScriptableContext, TooltipItem } from 'chart.js';
 
-/** One palette for every chart in the app. */
 export const CHART_COLORS = {
   green: '#16A34A',
   blue: '#2563EB',
@@ -27,10 +26,6 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 }
 
-/**
- * Fill that fades downward, for area charts. Returns 'transparent' on the very
- * first paint, before Chart.js has measured the plot area.
- */
 export function verticalGradient(color: string, opacity = 0.18) {
   return (context: ScriptableContext<'line'>): CanvasGradient | string => {
     const { ctx, chartArea } = context.chart;
@@ -43,10 +38,6 @@ export function verticalGradient(color: string, opacity = 0.18) {
   };
 }
 
-/**
- * Shows roughly `target` markers however many points there are, so a year of
- * daily data does not turn into 365 dots.
- */
 export function sparsePointRadius(target = 8) {
   return (context: ScriptableContext<'line'>): number => {
     const count = context.chart.data.labels?.length ?? 0;
@@ -75,7 +66,6 @@ export function lineChartOptions(
       },
     },
     plugins: {
-      // The pages render their own legend so it can be styled with Tailwind.
       legend: { display: false },
       tooltip: {
         backgroundColor: TOOLTIP_BG,

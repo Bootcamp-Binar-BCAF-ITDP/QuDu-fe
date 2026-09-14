@@ -13,7 +13,6 @@ import { REQUIRES_AUTH } from '../../context/auth-context';
 
 const API_ORIGIN = environment.apiOrigin;
 
-/** Page size used when walking the bucket to find a single request. */
 const LOOKUP_PAGE_SIZE = 100;
 
 export interface PlafondBucketQuery {
@@ -29,10 +28,6 @@ export class PlafondRequestService {
 
   private readonly apiUrl = `${API_ORIGIN}/api/bm/plafond-requests`;
 
-  /**
-   * The branch manager queue. Backed by findByStatus(PENDING), so decided
-   * requests drop out of it — there is no search parameter on the server.
-   */
   bucket(query: PlafondBucketQuery = {}): Observable<PageResponse<PlafondRequestItem>> {
     const { page = 0, size = 10, sortBy = 'requestDate', sortDir = 'asc' } = query;
 
@@ -46,11 +41,6 @@ export class PlafondRequestService {
     );
   }
 
-  /**
-   * The server exposes no GET-by-id, so the review page walks the bucket until
-   * it finds the request. Resolves to null once the last page is exhausted,
-   * which is also what a request that has already been decided looks like.
-   */
   findOne(requestId: string): Observable<PlafondRequestItem | null> {
     return this.bucket({ page: 0, size: LOOKUP_PAGE_SIZE }).pipe(
       expand((res) =>
@@ -61,7 +51,6 @@ export class PlafondRequestService {
     );
   }
 
-  /** PENDING -> APPROVED or REJECTED. Returns the request as it now stands. */
   decide(requestId: string, body: PlafondDecisionBody): Observable<PlafondRequestItem> {
     const context = new HttpContext().set(REQUIRES_AUTH, true);
 

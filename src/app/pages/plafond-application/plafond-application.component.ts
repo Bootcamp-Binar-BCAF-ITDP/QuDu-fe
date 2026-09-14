@@ -24,10 +24,6 @@ const STATUS_STYLES: Record<PlafondRequestStatus, Chip> = {
 
 const PAGE_SIZES = [5, 10, 25, 50];
 
-/**
- * Sort keys are Pageable property paths on CustomerPlafondRequest, so nested
- * ones have to be spelled the way the entity spells them.
- */
 export type PlafondSortField =
   | 'requestId'
   | 'customer.customerName'
@@ -127,7 +123,6 @@ export class PlafondApplicationComponent implements OnInit {
       });
   }
 
-  // ---- sorting, paging ----
 
   toggleSort(field: PlafondSortField): void {
     if (this.sortBy() === field) {
@@ -168,17 +163,11 @@ export class PlafondApplicationComponent implements OnInit {
     }
   }
 
-  // ---- navigation ----
 
-  /**
-   * The row travels in navigation state so the review page does not have to
-   * walk the bucket again; it falls back to a lookup on a hard refresh.
-   */
   open(item: PlafondRequestItem): void {
     this.router.navigate(['/plafond-applications', item.requestId], { state: { request: item } });
   }
 
-  // ---- presentation helpers ----
 
   statusStyle(status: PlafondRequestStatus): Chip {
     return (
@@ -189,7 +178,6 @@ export class PlafondApplicationComponent implements OnInit {
     );
   }
 
-  /** A jump of more than one tier is worth a second look, so it is called out. */
   levelJump(item: PlafondRequestItem): number | null {
     if (item.previousLevel == null) return null;
     return item.requestedLevel - item.previousLevel;

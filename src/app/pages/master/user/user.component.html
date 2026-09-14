@@ -1,5 +1,4 @@
 <div class="p-4 sm:p-6">
-  <!-- Header -->
   <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
     <div>
       <h1 class="text-2xl font-bold text-gray-800">User Management</h1>
@@ -16,7 +15,6 @@
     </button>
   </div>
 
-  <!-- Search -->
   <div class="mb-4">
     <input
       type="text"
@@ -27,7 +25,6 @@
     />
   </div>
 
-  <!-- Table + Pagination -->
   <app-table
     [columns]="columns"
     [data]="users()"
@@ -46,17 +43,11 @@
     (sortChange)="onSortChange($event)"
   />
 
-  <!-- ========================================================= -->
-  <!-- ADD / EDIT USER MODAL -->
-  <!-- ========================================================= -->
 
   <div *ngIf="modalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <!-- Overlay -->
     <div class="absolute inset-0 bg-black/50" (click)="closeModal()"></div>
 
-    <!-- Modal -->
     <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white shadow-xl">
-      <!-- Header -->
       <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4">
         <div>
           <h2 class="text-xl font-semibold text-gray-800">
@@ -78,10 +69,8 @@
         </button>
       </div>
 
-      <!-- Form -->
       <form [formGroup]="userForm" (ngSubmit)="saveUser()">
         <div class="grid grid-cols-1 gap-5 p-6 md:grid-cols-2">
-          <!-- Username -->
           <div>
             <label class="mb-2 block text-sm font-medium text-gray-700"> Username </label>
 
@@ -97,7 +86,6 @@
             }
           </div>
 
-          <!-- Email -->
           <div>
             <label class="mb-2 block text-sm font-medium text-gray-700"> Email </label>
 
@@ -113,7 +101,6 @@
             }
           </div>
 
-          <!-- Password -->
           <div>
             <label class="mb-2 block text-sm font-medium text-gray-700"> Password </label>
 
@@ -131,7 +118,6 @@
             }
           </div>
 
-          <!-- Full Name -->
           <div>
             <label class="mb-2 block text-sm font-medium text-gray-700"> Full Name </label>
 
@@ -147,7 +133,6 @@
             }
           </div>
 
-          <!-- Phone -->
           <div>
             <label class="mb-2 block text-sm font-medium text-gray-700"> Phone Number </label>
 
@@ -163,7 +148,6 @@
             }
           </div>
 
-          <!-- Role -->
           <div>
             <label class="mb-2 block text-sm font-medium text-gray-700"> Role </label>
 
@@ -185,7 +169,6 @@
             }
           </div>
 
-          <!-- Branch -->
           <div>
             <label class="mb-2 block text-sm font-medium text-gray-700"> Branch </label>
 
@@ -210,7 +193,6 @@
           </div>
         </div>
 
-        <!-- Footer -->
         <div
           class="flex justify-end gap-3 rounded-b-xl border-t border-gray-200 bg-gray-50 px-6 py-4"
         >

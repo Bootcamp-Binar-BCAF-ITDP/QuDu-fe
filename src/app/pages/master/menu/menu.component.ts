@@ -33,14 +33,11 @@ export class MenuComponent implements OnInit {
 
   editingMenuId: number | null = null;
 
-  // Search
   search = '';
 
-  // Pagination
   currentPage = 1;
   pageSize = 5;
 
-  // Sorting
   sortBy = 'menuId';
   sortDir: 'asc' | 'desc' = 'asc';
 
@@ -81,25 +78,21 @@ export class MenuComponent implements OnInit {
     this.loadMenus();
   }
 
-  // Search Handler
   onSearch(): void {
     this.searchInput$.next(this.search);
   }
 
-  // Page Handler
   onPageChange(page: number): void {
     this.currentPage = page;
     this.loadMenus();
   }
 
-  // PAGE SIZE HANDLER
   onPageSizeChange(size: number): void {
     this.pageSize = size;
     this.currentPage = 1;
     this.loadMenus();
   }
 
-  // SORT HANDLER
   onSortChange(event: SortEvent): void {
     this.sortBy = event.sortBy;
     this.sortDir = event.sortDir;
@@ -125,7 +118,6 @@ export class MenuComponent implements OnInit {
           this.menu.set(page?.content ?? []);
           this.totalElements.set(page?.totalElements ?? 0);
 
-          // Deleting the last row on the last page can strand us past the end.
           const lastPage = Math.max(1, page?.totalPages ?? 1);
 
           if (this.currentPage > lastPage) {
@@ -200,7 +192,6 @@ export class MenuComponent implements OnInit {
       menuName: formValue.menuName ?? '',
     };
 
-    // UPDATE
     if (this.editingMenuId !== null) {
       this.menuService.updateMenu(this.editingMenuId, request).subscribe({
         next: () => {
@@ -215,7 +206,6 @@ export class MenuComponent implements OnInit {
             showConfirmButton: false,
           });
 
-          // Stay on the current page — the edited row is still there.
           this.loadMenus();
         },
 
@@ -235,7 +225,6 @@ export class MenuComponent implements OnInit {
       return;
     }
 
-    // CREATE
     this.menuService.addMenu(request).subscribe({
       next: () => {
         this.submitting.set(false);
@@ -249,7 +238,6 @@ export class MenuComponent implements OnInit {
           showConfirmButton: false,
         });
 
-        // Back to page 1 so the new record is visible.
         this.currentPage = 1;
         this.loadMenus();
       },
