@@ -139,7 +139,7 @@
           <div class="rounded-lg border border-slate-200 bg-slate-50/70 p-4">
             <p class="text-xs text-slate-500">Interest rate</p>
             <p class="mt-1 text-lg font-semibold text-slate-900">
-              {{ monthlyRateLabel }}
+              {{ monthlyRateLabel() }}
               <span class="text-sm font-normal text-slate-500">/ month</span>
             </p>
             <p class="text-xs text-slate-400">indicative</p>
@@ -531,9 +531,14 @@
                 [style.width.%]="dtiBarWidth()"
               ></div>
             </div>
-            <p class="mt-1 text-right text-xs text-slate-400">
-              {{ healthyDtiLabel }}
-            </p>
+            @if (dtiUnavailableReason(); as reason) {
+              <p class="mt-1 text-xs text-slate-400">{{ reason }}</p>
+            } @else {
+              <p class="mt-1 text-right text-xs text-slate-400">
+                {{ formatRupiah(estimatedInstallment()) }} of
+                {{ formatRupiah(creditScore()?.monthlyIncome) }} monthly income
+              </p>
+            }
           </div>
         </dl>
 

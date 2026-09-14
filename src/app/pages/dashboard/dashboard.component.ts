@@ -22,6 +22,12 @@ import {
 } from '../../shared/components/chart/chart-theme';
 import { ChartComponent } from '../../shared/components/chart/chart.component';
 import { DashboardService } from '../../core/services/dashboard/dashboard.services';
+import {
+  CsvValue,
+  csvDate,
+  exportCsv as writeCsvFile,
+  stampedFilename,
+} from '../../shared/utils/csv-export.util';
 
 const PERIOD_TEXT: Record<DashboardPeriod, { label: string; comparison: string }> = {
   THIS_MONTH: { label: 'This month', comparison: 'vs last month' },
@@ -103,7 +109,10 @@ const COUNT_FORMAT = new Intl.NumberFormat('id-ID');
 export interface CardView {
   key: SummaryKey;
   label: string;
+  /** Formatted for the tile, e.g. "Rp 1,2 M". Not a number. */
   display: string;
+  /** The unformatted figure, which is what an export has to carry. */
+  raw: number;
   change: number | null;
   direction: TrendDirection;
   invertTrend: boolean;
@@ -144,6 +153,24 @@ export class DashboardComponent {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
 
+  /**
+   * A custom window. Both sides are required before it takes effect, matching
+   * the server, which refuses one date alone rather than guessing the other.
+   */
+  readonly fromDate = signal('');
+  readonly toDate = signal('');
+
+  readonly customRangeReady = computed(() => !!this.fromDate() && !!this.toDate());
+  readonly customRangeActive = signal(false);
+
+  readonly dateError = computed(() => {
+    const from = this.fromDate();
+    const to = this.toDate();
+    if (from && to && from > to) return 'The start date is after the end date.';
+    if ((from && !to) || (!from && to)) return 'Pick both dates to use a custom range.';
+    return null;
+  });
+
   // Static — no need to rebuild these on every render.
   readonly lineOptions = lineChartOptions();
   readonly donutOptions = doughnutChartOptions();
@@ -156,8 +183,14 @@ export class DashboardComponent {
     this.loading.set(true);
     this.error.set(null);
 
+    const custom = this.customRangeActive() && this.customRangeReady();
+
     this.service
-      .getDashboard(this.period())
+      .getDashboard(
+        this.period(),
+        custom ? this.fromDate() : undefined,
+        custom ? this.toDate() : undefined,
+      )
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
@@ -172,11 +205,92 @@ export class DashboardComponent {
       });
   }
 
+  /**
+   * One file, three sections, separated by blank rows.
+   *
+   * The dashboard holds three different shapes: five summary figures, a daily
+   * running series, and a status breakdown. Forcing them into one rectangle
+   * would invent columns that mean nothing; three separate downloads would make
+   * the reader stitch them back together. Sections are how a spreadsheet report
+   * normally carries this, and Excel opens them without complaint.
+   */
+  exportCsv(): void {
+    const data = this.data();
+    if (!data) return;
+
+    const rows: CsvValue[][] = [
+      ['QuickDuit dashboard'],
+      ['Period', this.windowLabel()],
+      ['From', csvDate(data.from)],
+      ['To', csvDate(data.to)],
+      [],
+
+      ['Summary'],
+      ['Metric', 'Value', 'Change vs previous (%)', 'Direction'],
+      ...this.cards().map((card) => [
+        card.label,
+        card.raw,
+        card.change ?? '',
+        card.direction ?? '',
+      ]),
+      [],
+
+      ['Applications over time'],
+      ['Date', 'All', 'Approved', 'Rejected', 'Pending'],
+      ...data.applicationsOverTime.map((point) => [
+        csvDate(point.date),
+        point.all,
+        point.approved,
+        point.rejected,
+        point.pending,
+      ]),
+      [],
+
+      ['By status'],
+      ['Status', 'Count', 'Share (%)'],
+      ...data.byStatus.map((slice) => [slice.label, slice.count, slice.percentage]),
+      ['Total', data.byStatusTotal, ''],
+    ];
+
+    const slug = this.customRangeActive()
+      ? `${this.fromDate()}_${this.toDate()}`
+      : this.period().toLowerCase();
+
+    writeCsvFile(stampedFilename(`dashboard-${slug}`), rows);
+  }
+
+  /** Choosing a preset drops the custom window, since the two cannot both apply. */
   changePeriod(period: DashboardPeriod): void {
-    if (period === this.period()) return;
+    if (period === this.period() && !this.customRangeActive()) return;
+
     this.period.set(period);
+    this.customRangeActive.set(false);
     this.load();
   }
+
+  applyCustomRange(): void {
+    if (!this.customRangeReady() || this.dateError()) return;
+    this.customRangeActive.set(true);
+    this.load();
+  }
+
+  clearCustomRange(): void {
+    if (!this.customRangeActive() && !this.fromDate() && !this.toDate()) return;
+
+    this.fromDate.set('');
+    this.toDate.set('');
+    this.customRangeActive.set(false);
+    this.load();
+  }
+
+  /**
+   * What the export and the chart heading should call this window. A custom
+   * range has no preset name, so it is described by its own dates.
+   */
+  readonly windowLabel = computed(() => {
+    if (!this.customRangeActive()) return this.periodLabel(this.period());
+    return `${this.fromDate()} to ${this.toDate()}`;
+  });
 
   periodLabel(period: DashboardPeriod): string {
     return PERIOD_TEXT[period].label;
@@ -216,6 +330,7 @@ export class DashboardComponent {
         display: def.money
           ? this.compactRupiah(metric?.value ?? 0)
           : COUNT_FORMAT.format(metric?.value ?? 0),
+        raw: metric?.value ?? 0,
         change: metric?.changePercent ?? null,
         direction: (metric?.direction ?? 'FLAT') as TrendDirection,
         invertTrend: def.invertTrend,

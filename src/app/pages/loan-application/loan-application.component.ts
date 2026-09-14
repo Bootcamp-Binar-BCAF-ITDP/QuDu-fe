@@ -12,7 +12,38 @@ import {
   statusesMatching,
 } from '../../models/loan-application/loan-application.models';
 import { LoanApplicationService } from '../../core/services/loan-application/loan-application.service';
+import {
+  CsvValue,
+  csvDate,
+  exportCsv as writeCsvFile,
+  stampedFilename,
+} from '../../shared/utils/csv-export.util';
 import { ApplicationDetailModalComponent } from './application-review-modal.component';
+
+/**
+ * A ceiling on one export, not a page size. Large enough to cover a realistic
+ * filtered report, small enough that a stray click cannot pull the whole table.
+ */
+const MAX_EXPORT_ROWS = 5000;
+
+const EXPORT_HEADERS = [
+  'Application ID',
+  'Customer',
+  'NIK',
+  'Phone',
+  'Requested amount',
+  'Tenor (months)',
+  'Purpose',
+  'Monthly income',
+  'Monthly instalment',
+  'DSR (%)',
+  'Risk band',
+  'Status',
+  'Submitted',
+  'Bank',
+  'Account number',
+  'Account name',
+];
 
 interface StatusStyle {
   label: string;
@@ -78,6 +109,27 @@ export class LoanApplicationComponent implements OnInit {
 
   readonly selected = signal<LoanApplication | null>(null);
 
+  readonly exporting = signal(false);
+  readonly exportError = signal<string | null>(null);
+  readonly exportNote = signal<string | null>(null);
+
+  /**
+   * What the two date inputs hold. Empty means no bound on that side, which is
+   * why they are plain strings rather than nullable dates: an <input type=date>
+   * gives back '' when cleared, and turning that into null and back adds a
+   * conversion with nothing to gain.
+   */
+  readonly fromDate = signal('');
+  readonly toDate = signal('');
+
+  readonly dateError = computed(() => {
+    const from = this.fromDate();
+    const to = this.toDate();
+    return from && to && from > to ? 'The start date is after the end date.' : null;
+  });
+
+  readonly hasDateFilter = computed(() => !!this.fromDate() || !!this.toDate());
+
   /** What the user is typing. */
   readonly searchInput = signal('');
 
@@ -119,6 +171,93 @@ export class LoanApplicationComponent implements OnInit {
     this.load();
   }
 
+  /**
+   * Exports every application matching the current tab and search, not just the
+   * page on screen. Exporting ten visible rows when the filter matches nine
+   * hundred is the kind of export nobody wants twice.
+   *
+   * The cap exists so a careless click cannot ask the server for the entire
+   * table. When it bites, the file is still produced and the UI says so rather
+   * than quietly handing over a truncated report.
+   */
+  /** Any date change restarts at page one, or you land on a page that no longer exists. */
+  applyDateFilter(): void {
+    if (this.dateError()) return;
+    this.page.set(0);
+    this.load();
+  }
+
+  clearDateFilter(): void {
+    if (!this.hasDateFilter()) return;
+    this.fromDate.set('');
+    this.toDate.set('');
+    this.page.set(0);
+    this.load();
+  }
+
+  exportCsv(): void {
+    if (this.exporting() || this.dateError()) return;
+
+    this.exporting.set(true);
+    this.exportError.set(null);
+    this.exportNote.set(null);
+
+    this.service
+      .list({
+        page: 0,
+        size: MAX_EXPORT_ROWS,
+        sortBy: this.sortBy(),
+        sortDir: this.sortDir(),
+        statuses: this.activeStatuses(),
+        search: this.appliedSearch() || undefined,
+        from: this.fromDate() || undefined,
+        to: this.toDate() || undefined,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          const rows = res.content ?? [];
+
+          writeCsvFile(stampedFilename('applications'), [
+            EXPORT_HEADERS,
+            ...rows.map((app) => this.toExportRow(app)),
+          ]);
+
+          if (res.totalElements > rows.length) {
+            this.exportNote.set(
+              `Exported the first ${rows.length} of ${res.totalElements} matching applications.`,
+            );
+          }
+          this.exporting.set(false);
+        },
+        error: (err) => {
+          this.exportError.set(err?.error?.message ?? 'Could not build the export. Try again.');
+          this.exporting.set(false);
+        },
+      });
+  }
+
+  private toExportRow(app: LoanApplication): CsvValue[] {
+    return [
+      app.applicationId,
+      app.customer?.customerName ?? '',
+      app.customer?.nik ?? '',
+      app.customer?.phoneNumber ?? '',
+      app.requestedAmount ?? '',
+      app.tenor ?? '',
+      app.purpose ?? '',
+      app.income ?? '',
+      app.creditScore?.monthlyInstalment ?? '',
+      app.creditScore?.dsr ?? '',
+      app.creditScore?.band ?? '',
+      STATUS_STYLES[app.status]?.label ?? app.status,
+      csvDate(app.submissionDate),
+      app.bank ?? '',
+      app.bankAccountNumber ?? '',
+      app.bankAccountName ?? '',
+    ];
+  }
+
   load(): void {
     this.loading.set(true);
     this.error.set(null);
@@ -131,6 +270,8 @@ export class LoanApplicationComponent implements OnInit {
         sortDir: this.sortDir(),
         statuses: this.activeStatuses(),
         search: this.appliedSearch() || undefined,
+        from: this.fromDate() || undefined,
+        to: this.toDate() || undefined,
       })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({

@@ -3,7 +3,7 @@ import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { BucketItem } from '../../models/bucket/bucket.models';
+import { BucketItem, CreditScore } from '../../models/bucket/bucket.models';
 import { LoanStatus, SortDirection } from '../../models/loan-application/loan-application.models';
 import { BucketService } from '../../core/services/bucket/bucket.services.';
 import { AuthService } from '../../core/services/auth.services';
@@ -301,11 +301,42 @@ export class BucketComponent implements OnInit {
     return { label: 'Recommended', classes: 'text-green-700', tone: 'positive' };
   }
 
-  creditScoreClass(score: number | null | undefined): string {
-    if (score == null) return 'text-slate-300 ring-slate-200';
-    if (score >= 750) return 'text-green-700 ring-green-500';
-    if (score >= 650) return 'text-slate-600 ring-slate-300';
-    return 'text-red-600 ring-red-400';
+  /**
+   * Colour follows the band the server assigned, never a threshold decided
+   * here. Where the cut-offs sit is a lending policy question, and duplicating
+   * them in the browser is how two screens end up disagreeing.
+   */
+  creditScoreClass(score: CreditScore | null | undefined): string {
+    switch (score?.band) {
+      case 'LOW':
+        return 'text-green-700 ring-green-500';
+      case 'MODERATE':
+        return 'text-slate-600 ring-slate-300';
+      case 'HIGH':
+        return 'text-amber-600 ring-amber-400';
+      case 'VERY_HIGH':
+        return 'text-red-600 ring-red-400';
+      default:
+        return 'text-slate-300 ring-slate-200';
+    }
+  }
+
+  /** Whole percent, because the circle is 44px wide. Detail goes in the tooltip. */
+  creditScoreLabel(score: CreditScore | null | undefined): string {
+    return score?.dsr == null ? '—' : `${Math.round(score.dsr)}%`;
+  }
+
+  creditScoreTooltip(score: CreditScore | null | undefined): string {
+    if (!score) return 'Debt service ratio unavailable';
+    if (score.dsr == null) {
+      return score.unavailableReason ?? 'Debt service ratio unavailable';
+    }
+
+    return (
+      `DSR ${score.dsr}% · ` +
+      `${this.formatRupiah(score.monthlyInstalment)} per month ` +
+      `against ${this.formatRupiah(score.monthlyIncome)} income`
+    );
   }
 
   formatRupiah(value: number | null | undefined): string {

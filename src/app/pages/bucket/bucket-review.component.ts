@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, distinctUntilChanged, map, switchMap } from 'rxjs';
 import {
+  CreditScore,
   LoanApplication,
   LoanDocumentResponse,
   LoanStatus,
@@ -101,9 +102,7 @@ const NEUTRAL_CHIP: Chip = {
   classes: 'bg-slate-100 text-slate-700 ring-slate-200',
 };
 
-const MONTHLY_INTEREST_RATE = 0.01;
 
-const HEALTHY_DTI = 0.35;
 
 const DOCUMENT_ACRONYMS = new Set(['KTP', 'KK', 'NPWP', 'NIK', 'SIM', 'PBB']);
 
@@ -165,8 +164,18 @@ export class BucketReviewComponent {
   readonly currentUserId = signal<string | null>(null);
 
   readonly callStatuses = CALL_STATUSES;
-  readonly healthyDtiLabel = `Healthy range < ${Math.round(HEALTHY_DTI * 100)}%`;
-  readonly monthlyRateLabel = `${(MONTHLY_INTEREST_RATE * 100).toFixed(1).replace(/\.0$/, '')}%`;
+  /**
+   * The monthly rate actually applied, derived from the annual rate of the
+   * plafond tier this customer holds. It used to be a constant 1% for everyone,
+   * which was simply wrong for every tier that is not 12% a year.
+   */
+  readonly monthlyRateLabel = computed(() => {
+    const annual = this.creditScore()?.annualInterestRate;
+    if (annual == null) return '—';
+
+    const monthly = (annual / 12) * 100;
+    return `${monthly.toFixed(2).replace(/\.?0+$/, '')}%`;
+  });
 
   // ---- action form state ----
   readonly note = signal('');
@@ -431,25 +440,17 @@ export class BucketReviewComponent {
     }
   }
 
-  readonly estimatedInstallment = computed<number | null>(() => {
-    const app = this.application();
-    if (!app?.requestedAmount || !app.tenor) return null;
+  readonly creditScore = computed<CreditScore | null>(
+    () => this.application()?.creditScore ?? null,
+  );
 
-    const r = MONTHLY_INTEREST_RATE;
-    const factor = Math.pow(1 + r, app.tenor);
-    return (app.requestedAmount * r * factor) / (factor - 1);
-  });
-
-  readonly debtToIncome = computed<number | null>(() => {
-    const income = this.application()?.income;
-    const installment = this.estimatedInstallment();
-    if (!income || !installment) return null;
-    return installment / income;
-  });
+  readonly estimatedInstallment = computed<number | null>(
+    () => this.creditScore()?.monthlyInstalment ?? null,
+  );
 
   readonly debtToIncomePercent = computed<number | null>(() => {
-    const dti = this.debtToIncome();
-    return dti == null ? null : Math.round(dti * 100);
+    const dsr = this.creditScore()?.dsr;
+    return dsr == null ? null : Math.round(dsr);
   });
 
   readonly dtiBarWidth = computed(() => {
@@ -457,39 +458,49 @@ export class BucketReviewComponent {
     return pct == null ? 0 : Math.min(100, pct);
   });
 
-  readonly riskBand = computed<RiskBand>(() => {
-    const dti = this.debtToIncome();
+  /** Why the ratio is missing, when the server could not compute one. */
+  readonly dtiUnavailableReason = computed<string | null>(
+    () => this.creditScore()?.unavailableReason ?? null,
+  );
 
-    if (dti == null) {
-      return {
-        label: 'UNKNOWN',
-        chipClasses: 'bg-slate-200 text-slate-600',
-        barClasses: 'bg-slate-300',
-        width: 0,
-      };
+  readonly riskBand = computed<RiskBand>(() => {
+    switch (this.creditScore()?.band) {
+      case 'LOW':
+        return {
+          label: 'LOW',
+          chipClasses: 'bg-green-600 text-white',
+          barClasses: 'bg-green-600',
+          width: 25,
+        };
+      case 'MODERATE':
+        return {
+          label: 'MODERATE',
+          chipClasses: 'bg-amber-500 text-white',
+          barClasses: 'bg-amber-500',
+          width: 55,
+        };
+      case 'HIGH':
+        return {
+          label: 'HIGH',
+          chipClasses: 'bg-orange-600 text-white',
+          barClasses: 'bg-orange-600',
+          width: 80,
+        };
+      case 'VERY_HIGH':
+        return {
+          label: 'VERY HIGH',
+          chipClasses: 'bg-red-600 text-white',
+          barClasses: 'bg-red-600',
+          width: 100,
+        };
+      default:
+        return {
+          label: 'UNKNOWN',
+          chipClasses: 'bg-slate-200 text-slate-600',
+          barClasses: 'bg-slate-300',
+          width: 0,
+        };
     }
-    if (dti <= 0.25) {
-      return {
-        label: 'LOW',
-        chipClasses: 'bg-green-600 text-white',
-        barClasses: 'bg-green-600',
-        width: 25,
-      };
-    }
-    if (dti <= HEALTHY_DTI) {
-      return {
-        label: 'MEDIUM',
-        chipClasses: 'bg-amber-500 text-white',
-        barClasses: 'bg-amber-500',
-        width: 60,
-      };
-    }
-    return {
-      label: 'HIGH',
-      chipClasses: 'bg-red-600 text-white',
-      barClasses: 'bg-red-600',
-      width: 100,
-    };
   });
 
   readonly chip = computed<Chip>(() => {

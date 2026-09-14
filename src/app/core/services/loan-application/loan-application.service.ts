@@ -36,6 +36,9 @@ export class LoanApplicationService {
       params = params.set('search', search);
     }
 
+    if (query.from) params = params.set('from', query.from);
+    if (query.to) params = params.set('to', query.to);
+
     return params;
   }
 

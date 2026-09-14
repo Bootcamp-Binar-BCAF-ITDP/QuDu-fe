@@ -1,4 +1,5 @@
 import {
+  CreditScore,
   CustomerSummary,
   LoanDecisionResponse,
   LoanDisbursementResponse,
@@ -26,5 +27,8 @@ export interface BucketItem {
   verifications: LoanVerificationResponse[] | null;
   disbursement: LoanDisbursementResponse | null;
 
-  creditScore?: number;
+  creditScore?: CreditScore | null;
 }
+
+/** Re-exported so importers of the bucket model need not reach into two files. */
+export type { CreditScore, CreditScoreBand } from '../loan-application/loan-application.models';

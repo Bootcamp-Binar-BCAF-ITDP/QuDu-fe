@@ -20,7 +20,6 @@ import { LoanApplicationService } from '../../core/services/loan-application/loa
 import { DocumentPreviewService } from '../../core/services/document/document-preview.service';
 import { DocumentPreviewModalComponent } from '../../shared/components/document-preview-modal/document-preview-modal.component';
 
-const INDICATIVE_ANNUAL_RATE = 0.12;
 
 /** `callStatus` is free text and often Indonesian, so match on both languages. */
 const FAILED_CALL_MARKERS = [
@@ -98,13 +97,18 @@ export class ApplicationDetailModalComponent implements AfterViewInit, OnDestroy
     () => this.activeDocument()?.documentId ?? null,
   );
 
-  readonly estimatedInstallment = computed<number | null>(() => {
-    const { requestedAmount, tenor } = this.application();
-    if (!requestedAmount || !tenor) return null;
+  /**
+   * Comes from the server, which applies the rate of the plafond tier this
+   * customer actually holds. It used to be recomputed here at a flat 12% a
+   * year for everybody, which understated the instalment for every higher tier.
+   */
+  readonly estimatedInstallment = computed<number | null>(
+    () => this.application().creditScore?.monthlyInstalment ?? null,
+  );
 
-    const r = INDICATIVE_ANNUAL_RATE / 12;
-    const factor = Math.pow(1 + r, tenor);
-    return (requestedAmount * r * factor) / (factor - 1);
+  readonly installmentRateLabel = computed(() => {
+    const annual = this.application().creditScore?.annualInterestRate;
+    return annual == null ? 'rate unavailable' : `${(annual * 100).toFixed(2).replace(/\.?0+$/, '')}% p.a.`;
   });
 
   readonly timeline = computed<TimelineEntry[]>(() => {

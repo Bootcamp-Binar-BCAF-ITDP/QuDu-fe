@@ -140,7 +140,7 @@
               }
             </button>
           </th>
-          <th scope="col" class="px-6 py-3.5 text-center font-medium">Credit score</th>
+          <th scope="col" class="px-6 py-3.5 text-center font-medium">Credit score (DSR)</th>
           <th scope="col" class="px-6 py-3.5 font-medium">Mkt rec.</th>
           <th scope="col" class="px-6 py-3.5 font-medium">
             <button
@@ -245,8 +245,9 @@
                 <span
                   class="mx-auto flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold ring-2"
                   [class]="creditScoreClass(row.creditScore)"
+                  [title]="creditScoreTooltip(row.creditScore)"
                 >
-                  {{ row.creditScore ?? '—' }}
+                  {{ creditScoreLabel(row.creditScore) }}
                 </span>
               </td>
 

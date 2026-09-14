@@ -42,12 +42,87 @@
     Search
   </button>
 
+  <button
+    type="button"
+    (click)="exportCsv()"
+    [disabled]="exporting() || loading()"
+    class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12" />
+      <path stroke-linecap="round" stroke-linejoin="round" d="M7 10l5 5 5-5" />
+      <path stroke-linecap="round" stroke-linejoin="round" d="M4 21h16" />
+    </svg>
+    {{ exporting() ? 'Preparing…' : 'Export CSV' }}
+  </button>
+
   @if (appliedSearch()) {
     <p class="text-sm text-slate-500 sm:ml-1">
       Showing results for “{{ appliedSearch() }}”
     </p>
   }
 </div>
+
+<!-- date window -->
+<div class="mb-4 flex flex-wrap items-end gap-3">
+  <div>
+    <label class="mb-1 block text-xs font-medium text-slate-600" for="app-from">
+      Submitted from
+    </label>
+    <input
+      id="app-from"
+      type="date"
+      [ngModel]="fromDate()"
+      (ngModelChange)="fromDate.set($event)"
+      [max]="toDate() || null"
+      class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-700 focus:outline-none focus:ring-1 focus:ring-green-700"
+    />
+  </div>
+
+  <div>
+    <label class="mb-1 block text-xs font-medium text-slate-600" for="app-to">
+      Submitted to
+    </label>
+    <input
+      id="app-to"
+      type="date"
+      [ngModel]="toDate()"
+      (ngModelChange)="toDate.set($event)"
+      [min]="fromDate() || null"
+      class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-700 focus:outline-none focus:ring-1 focus:ring-green-700"
+    />
+  </div>
+
+  <button
+    type="button"
+    (click)="applyDateFilter()"
+    [disabled]="loading() || !!dateError()"
+    class="cursor-pointer rounded-lg bg-green-800 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    Apply dates
+  </button>
+
+  @if (hasDateFilter()) {
+    <button
+      type="button"
+      (click)="clearDateFilter()"
+      [disabled]="loading()"
+      class="cursor-pointer rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      Clear dates
+    </button>
+  }
+</div>
+
+@if (dateError()) {
+  <p class="mb-3 text-sm text-red-600">{{ dateError() }}</p>
+}
+@if (exportError()) {
+  <p class="mb-3 text-sm text-red-600">{{ exportError() }}</p>
+}
+@if (exportNote()) {
+  <p class="mb-3 text-sm text-amber-700">{{ exportNote() }}</p>
+}
 
 <!-- tabs -->
 <div class="flex flex-wrap gap-2" role="tablist" aria-label="Filter by status">

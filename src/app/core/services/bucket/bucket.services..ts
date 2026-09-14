@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { PageParams, PageResponse } from '../../../models/common/app.models';
-import { BucketItem } from '../../../models/bucket/bucket.models';
+import { BucketItem, CreditScore } from '../../../models/bucket/bucket.models';
 import { LoanDocumentResponse } from '../../../models/loan-application/loan-application.models';
 import { getProtected } from '../../../shared/utils/httpUtils.utils';
 
@@ -14,7 +14,22 @@ export class BucketService {
   private readonly http = inject(HttpClient);
 
   private readonly apiUrl = `${API_ORIGIN}/api/loan-applications/bucket`;
+  private readonly applicationsUrl = `${API_ORIGIN}/api/loan-applications`;
   private readonly disburseUrl = `${API_ORIGIN}/api/loan-disbursements`;
+
+  /**
+   * The same ratio the list already carries, for a single application.
+   *
+   * The bucket table must NOT call this per row: the list response embeds the
+   * score, so a page of ten would otherwise cost ten extra round trips for
+   * figures it already has.
+   */
+  creditScore(applicationId: string): Observable<CreditScore> {
+    return getProtected<CreditScore>(
+      this.http,
+      `${this.applicationsUrl}/${applicationId}/credit-score`,
+    ).pipe(map((res) => res.data));
+  }
 
   list(params: PageParams = {}): Observable<PageResponse<BucketItem>> {
     const {

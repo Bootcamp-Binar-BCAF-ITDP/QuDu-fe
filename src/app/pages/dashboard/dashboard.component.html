@@ -1,15 +1,88 @@
 <!-- header -->
-<header class="mb-5">
-  <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Dashboard</h1>
-  <p class="mt-1 text-sm text-slate-500">
-    @if (data(); as summary) {
-      Overview of loan applications ·
-      {{ summary.from | date: "MMM d, y" }} – {{ summary.to | date: "MMM d, y" }}
-    } @else {
-      Overview of loan applications
-    }
-  </p>
+<header class="mb-5 flex flex-wrap items-start justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Dashboard</h1>
+    <p class="mt-1 text-sm text-slate-500">
+      @if (data(); as summary) {
+        Overview of loan applications ·
+        {{ summary.from | date: "MMM d, y" }} – {{ summary.to | date: "MMM d, y" }}
+      } @else {
+        Overview of loan applications
+      }
+    </p>
+  </div>
+
+  <button
+    type="button"
+    (click)="exportCsv()"
+    [disabled]="!data() || loading()"
+    class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12" />
+      <path stroke-linecap="round" stroke-linejoin="round" d="M7 10l5 5 5-5" />
+      <path stroke-linecap="round" stroke-linejoin="round" d="M4 21h16" />
+    </svg>
+    Export CSV
+  </button>
 </header>
+
+<!-- custom date window. Overrides the period select above when applied. -->
+<div class="mb-5 flex flex-wrap items-end gap-3">
+  <div>
+    <label class="mb-1 block text-xs font-medium text-slate-600" for="dashboard-from">From</label>
+    <input
+      id="dashboard-from"
+      type="date"
+      [ngModel]="fromDate()"
+      (ngModelChange)="fromDate.set($event)"
+      [max]="toDate() || null"
+      class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-700 focus:outline-none focus:ring-1 focus:ring-green-700"
+    />
+  </div>
+
+  <div>
+    <label class="mb-1 block text-xs font-medium text-slate-600" for="dashboard-to">To</label>
+    <input
+      id="dashboard-to"
+      type="date"
+      [ngModel]="toDate()"
+      (ngModelChange)="toDate.set($event)"
+      [min]="fromDate() || null"
+      class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-green-700 focus:outline-none focus:ring-1 focus:ring-green-700"
+    />
+  </div>
+
+  <button
+    type="button"
+    (click)="applyCustomRange()"
+    [disabled]="loading() || !customRangeReady() || !!dateError()"
+    class="cursor-pointer rounded-lg bg-green-800 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    Apply range
+  </button>
+
+  @if (customRangeActive()) {
+    <button
+      type="button"
+      (click)="clearCustomRange()"
+      [disabled]="loading()"
+      class="cursor-pointer rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      Back to preset
+    </button>
+
+    <span
+      class="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-800 ring-1 ring-green-200"
+    >
+      Custom range · {{ windowLabel() }}
+    </span>
+  }
+</div>
+
+@if (dateError()) {
+  <p class="mb-3 text-sm text-red-600">{{ dateError() }}</p>
+}
 
 @if (loading()) {
   <div class="space-y-5">

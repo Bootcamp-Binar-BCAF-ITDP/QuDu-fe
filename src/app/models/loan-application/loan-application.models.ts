@@ -136,6 +136,28 @@ export interface LoanDisbursementResponse {
   disbursementDate?: string;
 }
 
+/** Matches CreditScoreResponse on the backend. */
+export type CreditScoreBand = 'LOW' | 'MODERATE' | 'HIGH' | 'VERY_HIGH' | 'UNKNOWN';
+
+/**
+ * The debt service ratio, computed by the server.
+ *
+ * Also what the review screens label DTI: instalment over income is the same
+ * arithmetic under either name. Nothing here is recomputed in the browser,
+ * because the interest rate depends on the plafond tier the customer holds and
+ * only the server knows which one that is.
+ */
+export interface CreditScore {
+  monthlyInstalment: number | null;
+  /** Annual rate as a fraction: 0.12 is 12 percent. Differs per plafond tier. */
+  annualInterestRate: number | null;
+  monthlyIncome: number | null;
+  /** Percent. Null when it could not be computed, which is not zero. */
+  dsr: number | null;
+  band: CreditScoreBand;
+  unavailableReason: string | null;
+}
+
 export interface LoanApplication {
   applicationId: string;
   customer: CustomerSummary | null;
@@ -156,6 +178,8 @@ export interface LoanApplication {
   bmdecision: LoanDecisionResponse | null;
   verifications: LoanVerificationResponse[] | null;
   disbursement: LoanDisbursementResponse | null;
+
+  creditScore?: CreditScore | null;
 }
 
 export type SortDirection = 'asc' | 'desc';
@@ -180,6 +204,13 @@ export interface LoanApplicationQuery {
 
   statuses?: LoanStatus[];
   search?: string;
+
+  /**
+   * Inclusive bounds on submissionDate, ISO yyyy-MM-dd. Either may be omitted
+   * for an open-ended window; the server widens the missing side.
+   */
+  from?: string;
+  to?: string;
 }
 
 export interface BranchManagerDecisionRequest {
