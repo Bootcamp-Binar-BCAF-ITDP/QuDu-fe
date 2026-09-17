@@ -19,6 +19,7 @@ import {
   stampedFilename,
 } from '../../shared/utils/csv-export.util';
 import { ApplicationDetailModalComponent } from './application-review-modal.component';
+import { apiErrorMessage } from '../../shared/utils/api-message.util';
 
 const MAX_EXPORT_ROWS = 5000;
 
@@ -209,7 +210,7 @@ export class LoanApplicationComponent implements OnInit {
           this.exporting.set(false);
         },
         error: (err) => {
-          this.exportError.set(err?.error?.message ?? 'Could not build the export. Try again.');
+          this.exportError.set(apiErrorMessage(err, 'Could not build the export. Try again.'));
           this.exporting.set(false);
         },
       });
@@ -264,7 +265,7 @@ export class LoanApplicationComponent implements OnInit {
         error: (err) => {
           this.rows.set([]);
           this.error.set(
-            err?.error?.message ?? 'Could not load applications. Check your connection and retry.',
+            apiErrorMessage(err, 'Could not load applications. Check your connection and retry.'),
           );
           this.loading.set(false);
         },

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.services';
+import { apiErrorMessage } from '../../../shared/utils/api-message.util';
 
 @Component({
   selector: 'app-reset-password',
@@ -99,8 +100,7 @@ export class ResetPasswordComponent implements OnInit {
         this.loading = false;
 
         this.errorMessage =
-          error.error?.message ??
-          'Failed to reset password. The token may be invalid or expired.';
+          apiErrorMessage(error, 'Failed to reset password. The token may be invalid or expired.');
       },
     });
   }

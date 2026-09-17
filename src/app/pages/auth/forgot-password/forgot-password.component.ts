@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.services';
+import { apiErrorMessage } from '../../../shared/utils/api-message.util';
 
 @Component({
   selector: 'app-forgot-password',
@@ -55,8 +56,7 @@ export class ForgotPasswordComponent {
         this.loading = false;
 
         this.errorMessage =
-          error.error?.message ??
-          'An error occurred. Please try again.';
+          apiErrorMessage(error, 'An error occurred. Please try again.');
       },
     });
   }

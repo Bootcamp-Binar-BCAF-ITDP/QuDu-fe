@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.services';
 import { Role } from '../../../models/master/role.models';
 import { Branch } from '../../../models/master/branch.models';
+import { apiErrorMessage } from '../../../shared/utils/api-message.util';
 
 @Component({
   selector: 'app-register',
@@ -108,7 +109,7 @@ export class RegisterComponent implements OnInit {
         this.loading = false;
 
         if (error.error?.message) {
-          this.errorMessage = error.error.message;
+          this.errorMessage = apiErrorMessage(error, 'Registration failed. Please try again.');
         } else {
           this.errorMessage = 'An error occurred during registration. Please try again.';
         }

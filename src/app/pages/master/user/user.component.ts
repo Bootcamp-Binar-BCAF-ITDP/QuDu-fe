@@ -20,6 +20,7 @@ import { BranchService } from '../../../core/services/master/branch.services';
 import { RolesService } from '../../../core/services/master/roles.services';
 import { UserService } from '../../../core/services/master/user.services';
 import { LoadingComponent } from '../../../shared/components/loading/loading.component';
+import { apiErrorMessage } from '../../../shared/utils/api-message.util';
 
 @Component({
   selector: 'app-user',
@@ -204,7 +205,7 @@ export class UserComponent implements OnInit {
           Swal.fire({
             icon: 'error',
             title: 'Failed',
-            text: error?.error?.message ?? 'Failed to load users.',
+            text: apiErrorMessage(error, 'Failed to load users.'),
           });
         },
       });
@@ -350,7 +351,7 @@ export class UserComponent implements OnInit {
           Swal.fire({
             icon: 'error',
             title: 'Update Failed',
-            text: error?.error?.message ?? 'Failed to update user.',
+            text: apiErrorMessage(error, 'Failed to update user.'),
           });
         },
       });
@@ -383,7 +384,7 @@ export class UserComponent implements OnInit {
         Swal.fire({
           icon: 'error',
           title: 'Create Failed',
-          text: error?.error?.message ?? 'Failed to create user.',
+          text: apiErrorMessage(error, 'Failed to create user.'),
         });
       },
     });
@@ -431,7 +432,7 @@ export class UserComponent implements OnInit {
           Swal.fire({
             icon: 'error',
             title: 'Delete Failed',
-            text: error?.error?.message ?? 'Failed to delete user.',
+            text: apiErrorMessage(error, 'Failed to delete user.'),
           });
         },
       });

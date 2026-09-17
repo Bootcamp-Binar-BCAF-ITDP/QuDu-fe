@@ -12,6 +12,7 @@ import { Menu, MenuRequest } from '../../../models/master/menu.models';
 import { HttpErrorResponse } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { apiErrorMessage } from '../../../shared/utils/api-message.util';
 
 @Component({
   selector: 'app-menu',
@@ -217,7 +218,7 @@ export class MenuComponent implements OnInit {
           Swal.fire({
             icon: 'error',
             title: 'Update Failed',
-            text: error.error?.message ?? 'Failed to update menu.',
+            text: apiErrorMessage(error, 'Failed to update menu.'),
           });
         },
       });
@@ -250,7 +251,7 @@ export class MenuComponent implements OnInit {
         Swal.fire({
           icon: 'error',
           title: 'Create Failed',
-          text: error.error?.message ?? 'Failed to create menu.',
+          text: apiErrorMessage(error, 'Failed to create menu.'),
         });
       },
     });
@@ -297,7 +298,7 @@ export class MenuComponent implements OnInit {
           Swal.fire({
             icon: 'error',
             title: 'Delete Failed',
-            text: error.error?.message ?? 'Failed to delete menu.',
+            text: apiErrorMessage(error, 'Failed to delete menu.'),
           });
         },
       });

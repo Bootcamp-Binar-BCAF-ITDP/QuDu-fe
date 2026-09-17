@@ -14,6 +14,7 @@ import {
 import { Branch } from '../../../models/master/branch.models';
 import { BranchService } from '../../../core/services/master/branch.services';
 import { HttpErrorResponse } from '@angular/common/http';
+import { apiErrorMessage } from '../../../shared/utils/api-message.util';
 
 @Component({
   selector: 'app-branch',
@@ -267,7 +268,7 @@ export class BranchComponent implements OnInit {
           Swal.fire({
             icon: 'error',
             title: 'Update Failed',
-            text: error?.error?.message ?? 'Failed to update branch.',
+            text: apiErrorMessage(error, 'Failed to update branch.'),
           });
         },
       });
@@ -301,7 +302,7 @@ export class BranchComponent implements OnInit {
         Swal.fire({
           icon: 'error',
           title: 'Create Failed',
-          text: error?.error?.message ?? 'Failed to create branch.',
+          text: apiErrorMessage(error, 'Failed to create branch.'),
         });
       },
     });
@@ -348,7 +349,7 @@ export class BranchComponent implements OnInit {
           Swal.fire({
             icon: 'error',
             title: 'Delete Failed',
-            text: error.error?.message ?? 'Failed to delete branch.',
+            text: apiErrorMessage(error, 'Failed to delete branch.'),
           });
         },
       });

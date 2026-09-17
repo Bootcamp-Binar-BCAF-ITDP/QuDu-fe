@@ -13,6 +13,7 @@ import {
 import { LoanApplicationService } from '../../core/services/loan-application/loan-application.service';
 import { DocumentPreviewService } from '../../core/services/document/document-preview.service';
 import { DocumentPreviewModalComponent } from '../../shared/components/document-preview-modal/document-preview-modal.component';
+import { apiErrorMessage, humaniseApiMessage } from '../../shared/utils/api-message.util';
 
 export type RoleName = 'MARKETING' | 'BRANCH_MANAGER' | 'BACK_OFFICE' | 'ADMIN';
 
@@ -202,7 +203,7 @@ export class BucketReviewComponent {
           this.error.set(
             err?.status === 404
               ? `Application ${id} was not found.`
-              : (err?.error?.message ?? 'Could not load this application. Retry in a moment.'),
+              : (apiErrorMessage(err, 'Could not load this application. Retry in a moment.')),
           );
           this.loading.set(false);
         },
@@ -263,8 +264,12 @@ export class BucketReviewComponent {
     if (!app) return;
 
     const trimmed = this.note().trim();
-    if (recommendation === 'REJECT' && !trimmed) {
-      this.actionError.set('Add a note explaining the rejection before you send it.');
+    if (!trimmed) {
+      this.actionError.set(
+        recommendation === 'REJECT'
+          ? 'Add a note explaining the rejection before you send it.'
+          : 'Review note must be filled before you send it.',
+      );
       return;
     }
 
@@ -308,11 +313,17 @@ export class BucketReviewComponent {
 
     const status = this.callStatus();
 
+    const trimmed = this.note().trim();
+    if (!trimmed) {
+      this.actionError.set('Call note must be filled before you log the call.');
+      return;
+    }
+
     this.run(
       this.service.logCall({
         applicationId: app.applicationId,
         callStatus: status,
-        verificationNote: this.note().trim() || undefined,
+        verificationNote: trimmed,
       }),
       status === 'Can be Contacted'
         ? 'Call logged. The application is verified and ready to disburse.'
@@ -393,9 +404,11 @@ export class BucketReviewComponent {
   private errorMessage(err: unknown): string {
     const error = err as { status?: number; error?: { message?: string } };
 
-    if (error?.error?.message) return error.error.message;
+    return humaniseApiMessage(error?.error?.message, this.statusFallback(error?.status));
+  }
 
-    switch (error?.status) {
+  private statusFallback(status: number | undefined): string {
+    switch (status) {
       case 0:
         return 'No connection to the server. Check your network and try again.';
       case 400:

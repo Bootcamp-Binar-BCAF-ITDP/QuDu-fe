@@ -17,6 +17,7 @@ import { RolesService } from '../../../core/services/master/roles.services';
 import { Menu } from '../../../models/master/menu.models';
 import { MenuService } from '../../../core/services/master/menu.services';
 import { Router } from '@angular/router';
+import { apiErrorMessage } from '../../../shared/utils/api-message.util';
 
 @Component({
   selector: 'app-role',
@@ -289,7 +290,7 @@ export class RoleComponent implements OnInit {
           Swal.fire({
             icon: 'error',
             title: 'Update Failed',
-            text: error.error?.message ?? 'Failed to update role.',
+            text: apiErrorMessage(error, 'Failed to update role.'),
           });
         },
       });
@@ -323,7 +324,7 @@ export class RoleComponent implements OnInit {
         Swal.fire({
           icon: 'error',
           title: 'Create Failed',
-          text: error.error?.message ?? 'Failed to create role.',
+          text: apiErrorMessage(error, 'Failed to create role.'),
         });
       },
     });
@@ -378,7 +379,7 @@ export class RoleComponent implements OnInit {
           Swal.fire({
             icon: 'error',
             title: 'Delete Failed',
-            text: error.error?.message ?? 'Failed to delete role.',
+            text: apiErrorMessage(error, 'Failed to delete role.'),
           });
         },
       });

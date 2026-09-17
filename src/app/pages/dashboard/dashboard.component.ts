@@ -28,6 +28,7 @@ import {
   exportCsv as writeCsvFile,
   stampedFilename,
 } from '../../shared/utils/csv-export.util';
+import { humaniseApiMessage } from '../../shared/utils/api-message.util';
 
 const PERIOD_TEXT: Record<DashboardPeriod, { label: string; comparison: string }> = {
   THIS_MONTH: { label: 'This month', comparison: 'vs last month' },
@@ -278,9 +279,11 @@ export class DashboardComponent {
   private errorMessage(err: unknown): string {
     const error = err as { status?: number; error?: { message?: string } };
 
-    if (error?.error?.message) return error.error.message;
+    return humaniseApiMessage(error?.error?.message, this.statusFallback(error?.status));
+  }
 
-    switch (error?.status) {
+  private statusFallback(status: number | undefined): string {
+    switch (status) {
       case 0:
         return 'No connection to the server. Check your network and try again.';
       case 401:

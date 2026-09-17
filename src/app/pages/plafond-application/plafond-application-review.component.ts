@@ -14,6 +14,7 @@ import {
   PlafondRequestItem,
   PlafondRequestStatus,
 } from '../../models/plafond-request/plafond-request.models';
+import { apiErrorMessage, humaniseApiMessage } from '../../shared/utils/api-message.util';
 
 export type RoleName = 'MARKETING' | 'BRANCH_MANAGER' | 'BACK_OFFICE' | 'ADMIN';
 
@@ -148,7 +149,7 @@ export class PlafondApplicationReviewComponent {
         },
         error: (err) => {
           this.request.set(null);
-          this.error.set(err?.error?.message ?? 'Could not load this request. Retry in a moment.');
+          this.error.set(apiErrorMessage(err, 'Could not load this request. Retry in a moment.'));
           this.loading.set(false);
         },
       });
@@ -288,9 +289,11 @@ export class PlafondApplicationReviewComponent {
   private errorMessage(err: unknown): string {
     const error = err as { status?: number; error?: { message?: string } };
 
-    if (error?.error?.message) return error.error.message;
+    return humaniseApiMessage(error?.error?.message, this.statusFallback(error?.status));
+  }
 
-    switch (error?.status) {
+  private statusFallback(status: number | undefined): string {
+    switch (status) {
       case 0:
         return 'No connection to the server. Check your network and try again.';
       case 400:

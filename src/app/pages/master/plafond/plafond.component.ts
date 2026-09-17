@@ -12,6 +12,7 @@ import { Plafond, PlafondRequest } from '../../../models/master/plafond.models';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { PlafondService } from '../../../core/services/master/plafond.services';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { apiErrorMessage } from '../../../shared/utils/api-message.util';
 
 @Component({
   selector: 'app-plafond',
@@ -293,7 +294,7 @@ export class PlafondComponent implements OnInit {
           Swal.fire({
             icon: 'error',
             title: 'Update Failed',
-            text: error.error?.message ?? 'Failed to update plafond.',
+            text: apiErrorMessage(error, 'Failed to update plafond.'),
           });
         },
       });
@@ -326,7 +327,7 @@ export class PlafondComponent implements OnInit {
         Swal.fire({
           icon: 'error',
           title: 'Create Failed',
-          text: error.error?.message ?? 'Failed to create plafond.',
+          text: apiErrorMessage(error, 'Failed to create plafond.'),
         });
       },
     });
@@ -373,7 +374,7 @@ export class PlafondComponent implements OnInit {
           Swal.fire({
             icon: 'error',
             title: 'Delete Failed',
-            text: error.error?.message ?? 'Failed to delete plafond.',
+            text: apiErrorMessage(error, 'Failed to delete plafond.'),
           });
         },
       });

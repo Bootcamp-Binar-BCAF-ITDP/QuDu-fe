@@ -7,6 +7,7 @@ import { BucketItem, CreditScore } from '../../models/bucket/bucket.models';
 import { LoanStatus, SortDirection } from '../../models/loan-application/loan-application.models';
 import { BucketService } from '../../core/services/bucket/bucket.services.';
 import { AuthService } from '../../core/services/auth.services';
+import { apiErrorMessage } from '../../shared/utils/api-message.util';
 
 interface Chip {
   label: string;
@@ -170,7 +171,7 @@ export class BucketComponent implements OnInit {
         this.totalElements.set(0);
         this.totalPages.set(0);
         this.error.set(
-          err?.error?.message ?? 'Could not load this queue. Check your connection and retry.',
+          apiErrorMessage(err, 'Could not load this queue. Check your connection and retry.'),
         );
         this.loading.set(false);
       },

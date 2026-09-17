@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.services';
 import { finalize } from 'rxjs';
+import { apiErrorMessage } from '../../../shared/utils/api-message.util';
 
 @Component({
   selector: 'app-login',
@@ -72,7 +73,7 @@ export class LoginComponent {
           } else if (error.status === 0) {
             this.errorMessage = 'Cannot connect to the server.';
           } else {
-            this.errorMessage = error.error?.message || 'An unexpected error occurred.';
+            this.errorMessage = apiErrorMessage(error, 'An unexpected error occurred.');
           }
         },
       });
