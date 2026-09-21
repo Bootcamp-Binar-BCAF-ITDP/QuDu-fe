@@ -149,6 +149,11 @@ export interface CreditScore {
 export interface LoanApplication {
   applicationId: string;
   customer: CustomerSummary | null;
+
+  /** Branch the customer picked at signup; the queue this application sits in. */
+  branchId: number | null;
+  branchName: string | null;
+
   requestedAmount: number;
   tenor: number;
   purpose: string;

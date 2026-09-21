@@ -221,6 +221,8 @@
                       {{ row.customer?.customerName || 'Unknown customer' }}
                     </p>
                     <p class="truncate text-xs text-slate-500">{{ row.customer?.customerId }}</p>
+                    <!-- The queue is branch-scoped, so this is a reassurance, not a filter. -->
+                    <p class="truncate text-xs text-slate-400">{{ row.branchName || 'No branch' }}</p>
                   </div>
                 </div>
               </td>

@@ -19,6 +19,9 @@ export interface PlafondRequestItem {
   customerId: string;
   customerName: string;
 
+  branchId: number | null;
+  branchName: string | null;
+
   previousLevel: number | null;
   requestedLevel: number;
 

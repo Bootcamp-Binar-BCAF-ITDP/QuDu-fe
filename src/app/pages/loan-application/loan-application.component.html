@@ -266,6 +266,9 @@
                       {{ row.customer?.customerName || 'Unknown customer' }}
                     </p>
                     <p class="truncate text-xs text-slate-500">{{ row.customer?.customerId }}</p>
+                    <!-- This list is company-wide, so the branch is what tells
+                         two otherwise identical rows apart. -->
+                    <p class="truncate text-xs text-slate-400">{{ row.branchName || 'No branch' }}</p>
                   </div>
                 </div>
               </td>
