@@ -13,7 +13,6 @@ export interface BucketItem {
   applicationId: string;
   customer: CustomerSummary | null;
 
-  /** Branch this landed in — always the signed-in user's own branch. */
   branchId: number | null;
   branchName: string | null;
 
