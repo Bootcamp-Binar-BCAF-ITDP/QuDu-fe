@@ -1,3 +1,47 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+
+/*
+  Brand palette. The four base colours given by the brand are:
+
+    #622B14  deep brown   -> brand-800, the primary
+    #995F2F  mid brown    -> brand-500
+    #978F66  olive        -> brand-olive, for muted accents
+    #E4D6A9  sand         -> brand-200, surfaces and borders
+
+  The remaining steps are interpolated so the ramp behaves like a Tailwind
+  palette. `green-*` is redefined onto the same ramp on purpose: the UI was
+  built with green utility classes in ~380 places, and repointing the scale
+  rebrands all of them at once instead of rewriting every template.
+  New markup should prefer `brand-*`.
+
+  Status colours (amber, red, slate) are deliberately NOT remapped: they carry
+  meaning — rejected, pending, neutral — which the brand ramp cannot express.
+*/
+@theme {
+  --color-brand-50: #fbf7ec;
+  --color-brand-100: #f3e9cf;
+  --color-brand-200: #e4d6a9;
+  --color-brand-300: #d3c08c;
+  --color-brand-400: #b98f5b;
+  --color-brand-500: #995f2f;
+  --color-brand-600: #874f27;
+  --color-brand-700: #713c1d;
+  --color-brand-800: #622b14;
+  --color-brand-900: #4a2010;
+  --color-brand-950: #2c130a;
+
+  --color-brand-olive: #978f66;
+  --color-brand-olive-soft: #cfcbb3;
+
+  --color-green-50: #fbf7ec;
+  --color-green-100: #f3e9cf;
+  --color-green-200: #e4d6a9;
+  --color-green-300: #d3c08c;
+  --color-green-400: #b98f5b;
+  --color-green-500: #995f2f;
+  --color-green-600: #874f27;
+  --color-green-700: #713c1d;
+  --color-green-800: #622b14;
+  --color-green-900: #4a2010;
+  --color-green-950: #2c130a;
+}
