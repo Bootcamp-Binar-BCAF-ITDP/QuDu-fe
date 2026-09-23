@@ -8,6 +8,7 @@ import { AuthService } from '../../core/services/auth.services';
 import { PlafondRequestService } from '../../core/services/plafond-request/plafond-request.services';
 import { DocumentPreviewService } from '../../core/services/document/document-preview.service';
 import { DocumentPreviewModalComponent } from '../../shared/components/document-preview-modal/document-preview-modal.component';
+import { DocumentThumbnailComponent } from '../../shared/components/document-thumbnail/document-thumbnail.component';
 import { PlafondRequestDocument } from '../../models/plafond-request/plafond-request.models';
 import {
   PlafondDecision,
@@ -49,7 +50,7 @@ export interface Stage {
 @Component({
   selector: 'app-plafond-application-review',
   standalone: true,
-  imports: [DatePipe, FormsModule, DocumentPreviewModalComponent],
+  imports: [DatePipe, FormsModule, DocumentPreviewModalComponent, DocumentThumbnailComponent],
   templateUrl: './plafond-application-review.component.html',
 })
 export class PlafondApplicationReviewComponent {
@@ -73,6 +74,11 @@ export class PlafondApplicationReviewComponent {
     if (doc?.documentId == null) return null;
     return this.preview.plafondDocumentUrl(this.requestId(), doc.documentId);
   });
+
+  documentUrl(doc: PlafondRequestDocument): string | null {
+    if (doc?.documentId == null) return null;
+    return this.preview.plafondDocumentUrl(this.requestId(), doc.documentId);
+  }
 
   openPreview(doc: PlafondRequestDocument): void {
     this.previewDocument.set(doc);

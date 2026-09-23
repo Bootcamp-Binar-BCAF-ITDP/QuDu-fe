@@ -13,6 +13,7 @@ import {
 import { LoanApplicationService } from '../../core/services/loan-application/loan-application.service';
 import { DocumentPreviewService } from '../../core/services/document/document-preview.service';
 import { DocumentPreviewModalComponent } from '../../shared/components/document-preview-modal/document-preview-modal.component';
+import { DocumentThumbnailComponent } from '../../shared/components/document-thumbnail/document-thumbnail.component';
 import { apiErrorMessage, humaniseApiMessage } from '../../shared/utils/api-message.util';
 
 export type RoleName = 'MARKETING' | 'BRANCH_MANAGER' | 'BACK_OFFICE' | 'ADMIN';
@@ -129,7 +130,7 @@ interface RiskBand {
 @Component({
   selector: 'app-bucket-review',
   standalone: true,
-  imports: [DatePipe, FormsModule, DocumentPreviewModalComponent],
+  imports: [DatePipe, FormsModule, DocumentPreviewModalComponent, DocumentThumbnailComponent],
   templateUrl: './bucket-review.component.html',
 })
 export class BucketReviewComponent {
@@ -596,6 +597,11 @@ export class BucketReviewComponent {
         })
         .join(' ') || 'Document'
     );
+  }
+
+  documentUrl(doc: LoanDocumentResponse): string | null {
+    if (doc?.documentId == null) return null;
+    return this.preview.loanDocumentUrl(this.applicationId(), doc.documentId);
   }
 
   openDocument(doc: LoanDocumentResponse): void {
