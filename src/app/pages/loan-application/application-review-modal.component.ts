@@ -19,6 +19,7 @@ import {
 import { LoanApplicationService } from '../../core/services/loan-application/loan-application.service';
 import { DocumentPreviewService } from '../../core/services/document/document-preview.service';
 import { DocumentPreviewModalComponent } from '../../shared/components/document-preview-modal/document-preview-modal.component';
+import { DocumentThumbnailComponent } from '../../shared/components/document-thumbnail/document-thumbnail.component';
 
 
 const FAILED_CALL_MARKERS = [
@@ -47,7 +48,7 @@ export interface TimelineEntry {
 @Component({
   selector: 'app-application-detail-modal',
   standalone: true,
-  imports: [DatePipe, DocumentPreviewModalComponent],
+  imports: [DatePipe, DocumentPreviewModalComponent, DocumentThumbnailComponent],
   templateUrl: './application-review-modal.component.html',
 })
 export class ApplicationDetailModalComponent implements AfterViewInit, OnDestroy {
@@ -176,6 +177,11 @@ export class ApplicationDetailModalComponent implements AfterViewInit, OnDestroy
     if (doc?.documentId == null) return null;
     return this.preview.loanDocumentUrl(this.application().applicationId, doc.documentId);
   });
+
+  documentUrl(doc: LoanDocumentResponse): string | null {
+    if (doc?.documentId == null) return null;
+    return this.preview.loanDocumentUrl(this.application().applicationId, doc.documentId);
+  }
 
   openPreview(doc: LoanDocumentResponse): void {
     this.previewDocument.set(doc);

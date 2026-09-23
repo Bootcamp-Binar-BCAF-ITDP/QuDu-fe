@@ -1,0 +1,33 @@
+<div class="flex h-full w-full items-center justify-center overflow-hidden bg-white">
+  @if (loading()) {
+    <div class="h-full w-full animate-pulse bg-slate-200"></div>
+  } @else if (objectUrl() && isImage) {
+    <img [src]="objectUrl()" alt="" class="h-full w-full object-contain" />
+  } @else if (frameUrl() && isPdf) {
+    <iframe
+      [src]="frameUrl()"
+      tabindex="-1"
+      aria-hidden="true"
+      class="pointer-events-none h-full w-full border-0"
+    ></iframe>
+  } @else {
+    <div class="flex flex-col items-center gap-2 text-slate-400">
+      <svg
+        class="h-10 w-10"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M8 3h6l4 4v14a1 1 0 01-1 1H8a1 1 0 01-1-1V4a1 1 0 011-1z"
+        />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M14 3v5h5" />
+      </svg>
+      <span class="text-xs font-medium">{{ failed() ? 'Preview unavailable' : extension }}</span>
+    </div>
+  }
+</div>
