@@ -1,22 +1,5 @@
 @import 'tailwindcss';
 
-/*
-  Brand palette. The four base colours given by the brand are:
-
-    #622B14  deep brown   -> brand-800, the primary
-    #995F2F  mid brown    -> brand-500
-    #978F66  olive        -> brand-olive, for muted accents
-    #E4D6A9  sand         -> brand-200, surfaces and borders
-
-  The remaining steps are interpolated so the ramp behaves like a Tailwind
-  palette. `green-*` is redefined onto the same ramp on purpose: the UI was
-  built with green utility classes in ~380 places, and repointing the scale
-  rebrands all of them at once instead of rewriting every template.
-  New markup should prefer `brand-*`.
-
-  Status colours (amber, red, slate) are deliberately NOT remapped: they carry
-  meaning — rejected, pending, neutral — which the brand ramp cannot express.
-*/
 @theme {
   --color-brand-50: #fbf7ec;
   --color-brand-100: #f3e9cf;
