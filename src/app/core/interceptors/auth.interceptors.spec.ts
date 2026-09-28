@@ -176,14 +176,14 @@ describe('authInterceptor', () => {
     });
   });
 
-  it('does not treat a 403 as an expired session', () => {
+  it('sends a 403 to /forbidden without treating it as an expired session', () => {
     getProtected().subscribe({ error: () => undefined });
 
     backend.expectOne(PROTECTED).flush(null, { status: 403, statusText: 'Forbidden' });
 
     backend.expectNone(REFRESH);
-    expect(navigateTo).toHaveLength(0);
     expect(localStorage.getItem('access_token')).toBe('stale-access');
+    expect(navigateTo.map(([commands]) => commands)).toEqual([['/forbidden']]);
   });
 
   it('does not treat a 500 as an expired session', () => {

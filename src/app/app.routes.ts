@@ -36,13 +36,14 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
+        data: { title: 'Dashboard', menu: 'Dashboard' },
         canActivate: [authGuard, menuGuard],
         loadComponent: () =>
           import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent),
       },
       {
         path: 'applications',
-        data: { title: 'Applications History' },
+        data: { title: 'Applications History', menu: 'Applications' },
         canActivate: [menuGuard],
         loadComponent: () =>
           import('./pages/loan-application/loan-application.component').then(
@@ -51,7 +52,8 @@ export const routes: Routes = [
       },
       {
         path: 'bucket',
-        data: { title: 'Bucket Application' },
+        data: { title: 'Bucket Application', menu: 'Bucket' },
+        canActivate: [menuGuard],
         children: [
           {
             path: '',
@@ -68,7 +70,7 @@ export const routes: Routes = [
       },
       {
         path: 'plafond-applications',
-        data: { title: 'Plafond Applications' },
+        data: { title: 'Plafond Applications', menu: 'Plafond Application' },
         canActivate: [menuGuard],
         children: [
           {
@@ -90,36 +92,40 @@ export const routes: Routes = [
       },
       {
         path: 'master',
-        canActivate: [menuGuard],
         data: { title: 'Master Data' },
         children: [
           {
             path: 'roles',
-            data: { title: 'Role' },
+            data: { title: 'Role', menu: 'Role' },
+            canActivate: [menuGuard],
             loadComponent: () =>
               import('./pages/master/role/role.component').then((m) => m.RoleComponent),
           },
           {
             path: 'branches',
-            data: { title: 'Branch' },
+            data: { title: 'Branch', menu: 'Branch' },
+            canActivate: [menuGuard],
             loadComponent: () =>
               import('./pages/master/branch/branch.component').then((m) => m.BranchComponent),
           },
           {
             path: 'menus',
-            data: { title: 'Menu' },
+            data: { title: 'Menu', menu: 'Menu' },
+            canActivate: [menuGuard],
             loadComponent: () =>
               import('./pages/master/menu/menu.component').then((m) => m.MenuComponent),
           },
           {
             path: 'users',
-            data: { title: 'User' },
+            data: { title: 'User', menu: 'User' },
+            canActivate: [menuGuard],
             loadComponent: () =>
               import('./pages/master/user/user.component').then((m) => m.UserComponent),
           },
           {
             path: 'plafonds',
-            data: { title: 'Plafond' },
+            data: { title: 'Plafond', menu: 'Plafond' },
+            canActivate: [menuGuard],
             loadComponent: () =>
               import('./pages/master/plafond/plafond.component').then((m) => m.PlafondComponent),
           },
